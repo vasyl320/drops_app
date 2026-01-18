@@ -14,7 +14,11 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
-            Text("gfg")
+            
+            
+            Spacer()
+            //was geht ich bin talha
+            Text("Was geht")
         }
         .padding()
     }
@@ -22,4 +26,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+    
 }
