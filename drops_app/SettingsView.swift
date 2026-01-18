@@ -48,7 +48,7 @@ struct SettingsView: View {
             Spacer()
         }
         .padding()
-        .navigationTitle("Einstellungen") // Sichtbarer Titel, damit der iOS-Zurück-Button angezeigt wird
+       
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false) // Standard-iOS-Zurück-Button explizit sichtbar lassen
         .background(Color(.systemBackground))
