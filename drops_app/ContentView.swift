@@ -12,6 +12,7 @@ struct ContentView: View {
             
             
             Spacer()
+            //was geht ich bin talha
             //was geht
             Text("Was geht")
         }
