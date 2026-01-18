@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct ContentView: View {
@@ -40,6 +38,13 @@ struct ContentView: View {
                 Spacer()
             }
             .padding()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
         }
     }
 }
