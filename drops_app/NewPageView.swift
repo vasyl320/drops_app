@@ -7,6 +7,7 @@ struct NewPageView: View {
         VStack(spacing: 24) {
             Text("\(zaehler)/10")
                 .font(.system(size: 60))
+                .fontWeight(.black)
                 .bold()
 
             Divider()
@@ -24,6 +25,7 @@ struct NewPageView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
                     Image(systemName: "gearshape")
+                        .font(.system(size: 25))
                 }
             }
         }

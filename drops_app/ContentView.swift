@@ -42,6 +42,8 @@ struct ContentView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")
+                            .font(.system(size: 25))
+
                     }
                 }
             }
