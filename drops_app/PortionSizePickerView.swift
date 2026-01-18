@@ -6,12 +6,16 @@ struct PortionSizePickerView: View {
     @Environment(\.dismiss) private var dismiss // Zum Zurücknavigieren (eigener Zurück-Button)
 
     var body: some View {
+        
+        Spacer()
         VStack(spacing: 24) {
             // iOS-Wheel-Picker für Portionsgröße – zentriert und vergrößert
             Text("Wähle die Portionsgröße")
                 .font(.system(size: 30, weight: .semibold))
             
             Spacer()
+            
+            
             
             VStack {
                 Picker("Portionsgröße (ml)", selection: $selectedSize) {
