@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
-//  drops_app
-//
-//  Created by ta636 on 18.01.26.
-//
+
 
 import SwiftUI
 
@@ -22,6 +17,7 @@ struct ContentView: View {
             Text("Was geht")
         }
         .padding()
+        
     }
 }
 
