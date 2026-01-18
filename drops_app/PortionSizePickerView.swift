@@ -5,12 +5,16 @@ struct PortionSizePickerView: View {
     private let sizes: [Int] = Array(stride(from: 50, through: 1000, by: 50))
 
     var body: some View {
+        
+        Spacer()
         VStack(spacing: 24) {
             // iOS-Wheel-Picker für Portionsgröße – zentriert und vergrößert
             Text("Wähle die Portionsgröße")
-                .font(.system(size: 22, weight: .semibold))
+                .font(.system(size: 30, weight: .semibold))
             
             Spacer()
+            
+            
             
             VStack {
                 Picker("Portionsgröße (ml)", selection: $selectedSize) {
