@@ -18,9 +18,15 @@ struct NewPageView: View {
                 .scaledToFit()
                 .frame(maxWidth: 2000)
                 .onTapGesture { if zaehler < 10 { zaehler += 1 } }
-                
         }
         .padding()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: SettingsView()) {
+                    Image(systemName: "gearshape")
+                }
+            }
+        }
     }
 }
 
