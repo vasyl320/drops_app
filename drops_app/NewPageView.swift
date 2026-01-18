@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct NewPageView: View {
+    @State private var zaehler: Int = 1
+
     var body: some View {
         VStack(spacing: 24) {
-            Text("1/10 ")
+            Text("\(zaehler)/10")
                 .font(.system(size: 60))
                 .bold()
 
@@ -11,15 +13,12 @@ struct NewPageView: View {
 
             Spacer()
 
-            NavigationLink(destination: NewPageViewTwo()) {
-             Image("image1")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 2000)
-                .accessibilityLabel("Bild drücken")
-            }
-
-      Spacer()
+            Image("image1")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 2000)
+                .onTapGesture { if zaehler < 10 { zaehler += 1 } }
+                
         }
         .padding()
     }
