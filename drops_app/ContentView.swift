@@ -12,6 +12,7 @@ struct ContentView: View {
             
             
             Spacer()
+            //was geht ich bin talha
             //was geht
             Text("Was geht")
         }
@@ -24,3 +25,12 @@ struct ContentView: View {
     ContentView()
     
 }
+
+
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}
+
