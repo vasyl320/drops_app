@@ -20,5 +20,6 @@ struct WhitePageView: View {
 #Preview {
     NavigationStack {
         WhitePageView(title: "Beispiel")
+        Spacer()
     }
 }
