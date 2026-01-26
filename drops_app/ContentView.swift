@@ -35,54 +35,32 @@ struct ContentView: View {
                         .foregroundColor(.black)
                         .padding(.top, 22)
 
+                    NavigationLink {
+                        CounterPageView()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text("Los geht’s")
+                            Image(systemName: "arrow.right.circle")
+                        }
+                        .foregroundColor(.blue)
+                        .font(.system(size: 26, weight: .semibold))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 16)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color(.systemGray6))
+                        )
+                    }
+                    .padding(.top, 24)
+
                     Spacer()
                     // Removed central NavigationLink button
                     Spacer()
                     Spacer()
                 }
                 .padding()
-
-                HStack {
-                    // Bottom-left: Calendar
-                    NavigationLink {
-                        CalendarScreen()
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "calendar")
-                            Text("Kalender")
-                        }
-                        .foregroundColor(.blue)
-                        .font(.system(size: 18, weight: .semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(.systemGray6))
-                        )
-                    }
-
-                    Spacer()
-
-                    // Bottom-right: Settings
-                    NavigationLink {
-                        SettingsScreen()
-                    } label: {
-                        HStack(spacing: 8) {
-                            Text("Einstellungen")
-                            Image(systemName: "gearshape")
-                        }
-                        .foregroundColor(.blue)
-                        .font(.system(size: 18, weight: .semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(.systemGray6))
-                        )
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
             }
         }
     }
