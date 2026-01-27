@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct GlassCountPickerView: View {
-    @State private var glassCount: Int = 1
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("glassCount") private var glassCount: Int = 1
     private let counts: [Int] = Array(1...20)
 
     var body: some View {
@@ -36,9 +37,18 @@ struct GlassCountPickerView: View {
             Spacer()
         }
         .padding()
-        
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(false) // iOS-Back-Button explizit einblenden
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                        Text("Zurück")
+                    }
+                }
+            }
+        }
         .background(Color(.systemBackground))
     }
 }

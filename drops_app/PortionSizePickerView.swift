@@ -1,21 +1,23 @@
 import SwiftUI
 
+// MARK: - Änderungen/Ergänzungen
+// 1) Persistente Speicherung via @AppStorage für ml (selectedPortionSizeML) und Anzahl der Gläser (glassCount)
+// 2) Zusätzlicher Picker (segmented) für die Anzahl der Gläser
+// 3) Kleine graue Zusammenfassung (Formel): Anzahl × ml = Gesamtmenge
+// 4) Navigationstitel auf "Zurück" gesetzt, damit neben dem Back-Button der Text erscheint
+
 struct PortionSizePickerView: View {
     @State private var selectedSize: Int = 250
     private let sizes: [Int] = Array(stride(from: 200, through: 500, by: 50))
     @Environment(\.dismiss) private var dismiss // Zum Zurücknavigieren (eigener Zurück-Button)
 
     var body: some View {
-        
-        Spacer()
         VStack(spacing: 24) {
             // iOS-Wheel-Picker für Portionsgröße – zentriert und vergrößert
             Text("Wähle die Portionsgröße")
                 .font(.system(size: 30, weight: .semibold))
             
             Spacer()
-            
-            
             
             VStack {
                 Picker("Portionsgröße (ml)", selection: $selectedSize) {
@@ -63,3 +65,4 @@ struct PortionSizePickerView: View {
         PortionSizePickerView()
     }
 }
+

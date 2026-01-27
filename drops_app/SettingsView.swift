@@ -1,13 +1,25 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @AppStorage("selectedPortionSizeML") private var selectedSize: Int = 250
+    @AppStorage("glassCount") private var glassCount: Int = 1
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
 
-            // Title
-            Text("Einstellungen")
-                .font(.system(size: 34, weight: .bold))
+            // Formel-Box: Gesamtmenge = Anzahl × ml
+            HStack(spacing: 8) {
+                Image(systemName: "sum")
+                Text("Gesamt: \(glassCount) × \(selectedSize) ml = \(glassCount * selectedSize) ml")
+                    .font(.subheadline)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemGray6))
+            .foregroundColor(.secondary)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .accessibilityLabel("Gesamte Wassermenge: \(glassCount * selectedSize) Milliliter")
 
             Spacer()
 
@@ -50,7 +62,7 @@ struct SettingsView: View {
         .padding()
        
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(false) // Standard-iOS-Zurück-Button explizit sichtbar lassen
+        .navigationBarBackButtonHidden(false)
         .background(Color(.systemBackground))
     }
 }
