@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("selectedPortionSizeML") private var selectedSize: Int = 250
+    @AppStorage("portionSizeMl") private var selectedSize: Int = 250
     @AppStorage("glassCount") private var glassCount: Int = 1
 
     var body: some View {
@@ -44,6 +44,23 @@ struct SettingsView: View {
             NavigationLink(destination: GlassCountPickerView()) { // Navigiert zum iOS-Wheel-Picker für die Anzahl der Gläser
                 HStack {
                     Text("Anzahl Gläser wählen")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding()
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 100)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.blue)
+                )
+            }
+
+            // Third big button
+            NavigationLink(destination: ReminderSettingsView()) {
+                HStack {
+                    Text("Erinnerungen")
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white)
                         .padding()
