@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct CounterPageView: View {
-    @State private var zaehler: Int = 1
+    @State private var zaehler: Int = 0
+    private let glassImages: [String] = [
+        "glass_0", "glass_1", "glass_2", "glass_3", "glass_4",
+        "glass_5", "glass_6", "glass_7", "glass_8", "glass_9", "glass_10"
+    ]
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
@@ -13,15 +17,25 @@ struct CounterPageView: View {
 
                 Divider()
 
-                
-
-                Image("image1")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(minHeight: 600)
-                    .frame(maxWidth: 2000)
-                    .padding(.bottom, 80)
-                    .onTapGesture { if zaehler < 10 { zaehler += 1 } }
+                ZStack {
+                    Image(glassImages[zaehler])
+                        .resizable()
+                        .scaledToFit()
+                        .frame(minHeight: 600)
+                        .frame(maxWidth: 2000)
+                        .id(glassImages[zaehler])
+                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                }
+                .padding(.bottom, 80)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if zaehler < 10 {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            zaehler += 1
+                        }
+                    }
+                }
+                .animation(.easeInOut(duration: 0.22), value: zaehler)
             }
 
             HStack(spacing: 20) {
@@ -76,3 +90,4 @@ struct CounterPageView: View {
 #Preview {
     CounterPageView()
 }
+
