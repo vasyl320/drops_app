@@ -13,3 +13,4 @@ struct DropsApp: App {
     ContentView()
 }
 
+// asdodsda Roman war hier
