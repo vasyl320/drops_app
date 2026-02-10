@@ -54,14 +54,13 @@ struct ReminderSettingsView: View {
         }
         .padding()
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: { dismiss() }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chevron.left")
-                        Text("Zurück")
-                    }
+                    Image(systemName: "chevron.left")
                 }
+                .accessibilityLabel("Zurück")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Sichern") {
