@@ -4,6 +4,8 @@ struct CalendarView: View {
     @State private var displayedMonth: Date = Date()
     @State private var selectedDate: Date? = nil
     private let calendar = Calendar.current
+    
+    @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
 
     var body: some View {
         VStack(spacing: 16) {
@@ -15,6 +17,53 @@ struct CalendarView: View {
                 .shadow(color: Color.blue.opacity(0.08), radius: 6, x: 0, y: 2)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
+            
+            // Large centered "fire in sea" badge
+            ZStack {
+                // Minimal, clean flame without background fill
+                ZStack {
+                    // Subtle ring (no solid background)
+                    Circle()
+                        .stroke(
+                            LinearGradient(colors: [Color.cyan.opacity(0.6), Color.blue.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 2
+                        )
+                        .shadow(color: Color.cyan.opacity(0.25), radius: 6, x: 0, y: 2)
+
+                    // Soft glow (very light)
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    Color.cyan.opacity(0.20),
+                                    Color.clear
+                                ]),
+                                center: .center,
+                                startRadius: 1,
+                                endRadius: 120
+                            )
+                        )
+                        .blendMode(.plusLighter)
+
+                    // Flame icon
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 100, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
+                        )
+                        .shadow(color: Color.cyan.opacity(0.5), radius: 6, x: 0, y: 2)
+                        .opacity(0.95)
+
+                    // Centered number inside the flame
+                    Text(isTodayMarkedComplete() ? "1" : "0")
+                        .font(.system(size: 52, weight: .black, design: .rounded))
+                        .foregroundStyle(Color.white)
+                        .shadow(color: Color.blue.opacity(0.35), radius: 5, x: 0, y: 2)
+                }
+            }
+            .frame(width: 180, height: 180)
+            .padding(.bottom, 8)
+            .accessibilityHidden(true)
 
             // Existing calendar stack
             VStack(spacing: 20) {
@@ -34,7 +83,35 @@ struct CalendarView: View {
         HStack(spacing: 12) {
             Button(action: { changeMonth(by: -1) }) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 30, weight: .regular))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 56, height: 56)
+                    .background(
+                        Circle()
+                            .fill(
+                                LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                    )
+                    .overlay(
+                        Image(systemName: "water.waves")
+                            .font(.system(size: 44, weight: .regular))
+                            .foregroundColor(.white.opacity(0.10))
+                            .rotationEffect(.degrees(8))
+                            .offset(x: 4, y: -4)
+                            .clipShape(Circle())
+                    )
+                    .overlay(
+                        Circle().strokeBorder(
+                            LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing),
+                            lineWidth: 1.5
+                        )
+                    )
+                    .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Vorheriger Monat")
@@ -50,21 +127,65 @@ struct CalendarView: View {
 
             Button(action: { changeMonth(by: 1) }) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 30, weight: .regular))
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 56, height: 56)
+                    .background(
+                        Circle()
+                            .fill(
+                                LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                    )
+                    .overlay(
+                        Image(systemName: "water.waves")
+                            .font(.system(size: 44, weight: .regular))
+                            .foregroundColor(.white.opacity(0.10))
+                            .rotationEffect(.degrees(8))
+                            .offset(x: 4, y: -4)
+                            .clipShape(Circle())
+                    )
+                    .overlay(
+                        Circle().strokeBorder(
+                            LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing),
+                            lineWidth: 1.5
+                        )
+                    )
+                    .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Nächster Monat")
 
             Spacer()
 
-            Button("Heute") {
-                jumpToToday()
+            Button(action: { jumpToToday() }) {
+                Text("Heute")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                    )
+                    .overlay(
+                        Capsule().strokeBorder(
+                            LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing),
+                            lineWidth: 1.5
+                        )
+                    )
+                    .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
             }
-            .font(.system(size: 18, weight: .semibold))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.blue.opacity(0.15)))
-            .foregroundStyle(Color.blue)
         }
     }
 
@@ -74,10 +195,18 @@ struct CalendarView: View {
         return HStack(spacing: 0) {
             ForEach(symbols, id: \.self) { symbol in
                 Text(symbol)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Color.blue.opacity(0.8))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(
+                                LinearGradient(colors: [Color.blue.opacity(0.35), Color.cyan.opacity(0.35)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                    )
             }
         }
         .padding(.top, 4)
@@ -91,7 +220,6 @@ struct CalendarView: View {
                 dayCell(for: day)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: displayedMonth)
     }
 
     // MARK: - Day cell
@@ -99,36 +227,140 @@ struct CalendarView: View {
     private func dayCell(for date: Date) -> some View {
         let inMonth = isInDisplayedMonth(date)
         let isToday = self.isToday(date)
-        let isInMonth = inMonth
 
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(selectedDate == date ? Color.blue.opacity(0.25) : (inMonth ? Color.blue.opacity(0.10) : Color.clear))
+        let isSelected = (selectedDate == date)
+
+        let base = ZStack {
+            DayBackground(inMonth: inMonth, isSelected: isSelected)
+
+            Image(systemName: "water.waves")
+                .font(.system(size: 42, weight: .regular))
+                .foregroundColor(.white.opacity(inMonth ? 0.06 : 0.0))
+                .rotationEffect(.degrees(8))
+                .offset(x: 6, y: -6)
+                .allowsHitTesting(false)
+
             Text(dayLabel(for: date))
                 .font(.system(size: 26, weight: .semibold))
                 .foregroundStyle(inMonth ? Color.primary : Color.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .aspectRatio(1.0, contentMode: .fit)
-        .padding(5)
-        .overlay(
-            Group {
-                if selectedDate == date {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.blue, lineWidth: 2.5)
-                } else if isToday {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.blue.opacity(0.9), lineWidth: 2)
-                }
+
+            if isToday && isTodayMarkedComplete() {
+                // Inset full-tile blue fire style so the day number remains readable
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.blue.opacity(0.22),
+                                Color.cyan.opacity(0.20),
+                                Color.teal.opacity(0.18)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.cyan.opacity(0.35),
+                                Color.blue.opacity(0.25),
+                                Color.clear
+                            ]),
+                            center: .center,
+                            startRadius: 6,
+                            endRadius: 140
+                        )
+                        .blendMode(.plusLighter)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    )
+                    .overlay(
+                        ZStack {
+                            LinearGradient(
+                                colors: [Color.cyan.opacity(0.16), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .rotationEffect(.degrees(5))
+                            .offset(x: -6, y: -6)
+
+                            LinearGradient(
+                                colors: [Color.blue.opacity(0.14), Color.clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            .rotationEffect(.degrees(-6))
+                            .offset(x: 8, y: 10)
+                        }
+                        .blendMode(.plusLighter)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    )
+                    .padding(6)
+                    .allowsHitTesting(false)
             }
-        )
-        .shadow(color: isToday ? Color.blue.opacity(0.15) : Color.clear, radius: 4, x: 0, y: 1)
-        .onTapGesture {
-            selectedDate = date
         }
-        .contentShape(Rectangle())
-        .accessibilityLabel(accessibilityLabel(for: date))
-        .accessibilityAddTraits(selectedDate == date ? .isSelected : [])
+
+        base
+            .aspectRatio(1.0, contentMode: .fit)
+            .padding(5)
+            .overlay(selectionOrTodayStroke(isSelected: isSelected, isToday: isToday))
+            .shadow(color: isToday ? Color.cyan.opacity(0.25) : Color.clear, radius: 6, x: 0, y: 2)
+            .onTapGesture { selectedDate = date }
+            .contentShape(Rectangle())
+            .accessibilityLabel(accessibilityLabel(for: date))
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private struct DayBackground: View {
+        let inMonth: Bool
+        let isSelected: Bool
+
+        var body: some View {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(backgroundStyle)
+        }
+
+        private var backgroundStyle: AnyShapeStyle {
+            if inMonth {
+                return AnyShapeStyle(
+                    LinearGradient(
+                        colors: [
+                            Color.blue.opacity(isSelected ? 0.28 : 0.12),
+                            Color.cyan.opacity(isSelected ? 0.28 : 0.12),
+                            Color.teal.opacity(isSelected ? 0.28 : 0.12)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            } else {
+                return AnyShapeStyle(
+                    LinearGradient(colors: [Color.clear, Color.clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func selectionOrTodayStroke(isSelected: Bool, isToday: Bool) -> some View {
+        if isSelected {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
+                                   startPoint: .topLeading,
+                                   endPoint: .bottomTrailing),
+                    lineWidth: 2.5
+                )
+        } else if isToday {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(colors: [Color.blue.opacity(0.9), Color.cyan.opacity(0.9)],
+                                   startPoint: .topLeading,
+                                   endPoint: .bottomTrailing),
+                    lineWidth: 2
+                )
+        } else {
+            EmptyView()
+        }
     }
 
     // MARK: - Helpers
@@ -221,6 +453,16 @@ struct CalendarView: View {
         formatter.locale = Locale.current
         formatter.dateStyle = .full
         return formatter.string(from: date)
+    }
+    
+    private func isTodayMarkedComplete() -> Bool {
+        guard !todayFlameDate.isEmpty else { return false }
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale.current
+        formatter.dateFormat = "yyyy-MM-dd"
+        let todayString = formatter.string(from: Date())
+        return todayFlameDate == todayString
     }
 }
 
