@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 
 struct CounterPageView: View {
-    @State private var zaehler: Int = 0
+    @AppStorage("todayCount") private var zaehler: Int = 0
+    @AppStorage("todayCountDate") private var lastCountDate: String = ""
     @State private var flamePulse: Bool = false
     @State private var glowPulse: Bool = false
     @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
@@ -10,6 +11,16 @@ struct CounterPageView: View {
         "glass_0", "glass_1", "glass_2", "glass_3", "glass_4",
         "glass_5", "glass_6", "glass_7", "glass_8", "glass_9", "glass_10"
     ]
+    
+    private func todayKey() -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar.current
+        formatter.locale = Locale.current
+        formatter.timeZone = Calendar.current.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
@@ -132,6 +143,7 @@ struct CounterPageView: View {
                             withAnimation(.easeInOut(duration: 0.22)) {
                                 zaehler -= 1
                             }
+                            lastCountDate = todayKey()
                         }) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 30, weight: .bold))
@@ -185,6 +197,7 @@ struct CounterPageView: View {
                                 generator.impactOccurred()
                                 withAnimation(.easeInOut(duration: 0.22)) {
                                     zaehler += 1
+                                    lastCountDate = todayKey()
                                 }
                                 // If we just reached 10, mark today for the calendar flame
                                 if zaehler == 10 {
@@ -279,7 +292,13 @@ struct CounterPageView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 67)
         }
-     
+        .onAppear {
+            let today = todayKey()
+            if lastCountDate != today {
+                zaehler = 0
+                lastCountDate = today
+            }
+        }
         .padding()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

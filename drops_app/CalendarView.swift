@@ -7,6 +7,82 @@ struct CalendarView: View {
     
     @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
 
+    @AppStorage("markedBlueDates") private var markedBlueDatesStorage: String = "[]" // JSON array of strings (yyyy-MM-dd)
+
+    private var markedBlueDates: Set<String> {
+        get {
+            if let data = markedBlueDatesStorage.data(using: .utf8),
+               let array = try? JSONDecoder().decode([String].self, from: data) {
+                return Set(array)
+            }
+            return []
+        }
+        nonmutating set {
+            let array = Array(newValue)
+            if let data = try? JSONEncoder().encode(array),
+               let string = String(data: data, encoding: .utf8) {
+                markedBlueDatesStorage = string
+            }
+        }
+    }
+
+    // Call this when user achieves 10/10 to permanently mark today
+    func markTodayAsCompleted() {
+        // Set today's flame date so the flame shows "1" and persist the mark
+        let today = Date()
+        let key = dateKey(today)
+
+        // Update the flame date storage for today
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale.current
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        todayFlameDate = formatter.string(from: today)
+
+        // Persist the blue mark for today
+        var set = markedBlueDates
+        set.insert(key)
+        markedBlueDates = set
+    }
+
+    /// Call this when the user reaches 10/10 today. It updates the flame and marks the day.
+    func userReachedTenOutOfTenToday() {
+        // Debounce: if already marked for today, do nothing
+        if isTodayMarkedComplete() { return }
+        markTodayAsCompleted()
+    }
+
+    /// Call this when a day was missed (did not reach 10/10). It resets flame and clears all marks.
+    func resetAllProgressDueToMissedDay() {
+        // Clear the flame indicator (so the badge shows 0)
+        todayFlameDate = ""
+        // Clear all marked blue dates
+        markedBlueDates = []
+    }
+
+    /// Convenience: Use at day rollover if your app determines the previous day wasn't completed.
+    func handleDayRollover(previousDayCompleted: Bool) {
+        // If the previous day was not completed, reset everything
+        if !previousDayCompleted {
+            resetAllProgressDueToMissedDay()
+        }
+    }
+
+    private func isMarkedBlue(_ date: Date) -> Bool {
+        markedBlueDates.contains(dateKey(date))
+    }
+
+    // Returns a stable yyyy-MM-dd key for a given date using the current calendar
+    private func dateKey(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale.current
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             // External app name/title above the calendar
@@ -229,6 +305,7 @@ struct CalendarView: View {
         let isToday = self.isToday(date)
 
         let isSelected = (selectedDate == date)
+        let isMarked = isMarkedBlue(date)
 
         let base = ZStack {
             DayBackground(inMonth: inMonth, isSelected: isSelected)
@@ -245,7 +322,36 @@ struct CalendarView: View {
                 .foregroundStyle(inMonth ? Color.primary : Color.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if isToday && isTodayMarkedComplete() {
+            if isMarked {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.blue.opacity(0.26),
+                                Color.cyan.opacity(0.24),
+                                Color.teal.opacity(0.22)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.cyan.opacity(0.35),
+                                Color.blue.opacity(0.25),
+                                Color.clear
+                            ]),
+                            center: .center,
+                            startRadius: 6,
+                            endRadius: 140
+                        )
+                        .blendMode(.plusLighter)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    )
+                    .padding(6)
+                    .allowsHitTesting(false)
+            } else if isToday && isTodayMarkedComplete() {
                 // Inset full-tile blue fire style so the day number remains readable
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
@@ -302,7 +408,21 @@ struct CalendarView: View {
         base
             .aspectRatio(1.0, contentMode: .fit)
             .padding(5)
-            .overlay(selectionOrTodayStroke(isSelected: isSelected, isToday: isToday))
+            .overlay(
+                Group {
+                    if isMarked {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(colors: [Color.blue.opacity(0.9), Color.cyan.opacity(0.9)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing),
+                                lineWidth: 2
+                            )
+                    } else {
+                        selectionOrTodayStroke(isSelected: isSelected, isToday: isToday)
+                    }
+                }
+            )
             .shadow(color: isToday ? Color.cyan.opacity(0.25) : Color.clear, radius: 6, x: 0, y: 2)
             .onTapGesture { selectedDate = date }
             .contentShape(Rectangle())
