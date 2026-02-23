@@ -235,33 +235,6 @@ struct CalendarView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Nächster Monat")
-
-            Spacer()
-
-            Button(action: { jumpToToday() }) {
-                Text("Heute")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
-                    .background(
-                        Capsule()
-                            .fill(
-                                LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
-                            )
-                    )
-                    .overlay(
-                        Capsule().strokeBorder(
-                            LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing),
-                            lineWidth: 1.5
-                        )
-                    )
-                    .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
-            }
         }
     }
 

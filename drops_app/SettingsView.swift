@@ -8,17 +8,43 @@ struct SettingsView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            // Formel-Box: Gesamtmenge = Anzahl × ml (standard style)
-            HStack(spacing: 8) {
+            // Formel-Box: Gesamtmenge = Anzahl × ml (enhanced visibility)
+            HStack(spacing: 10) {
                 Image(systemName: "sum")
+                    .font(.system(size: 22, weight: .bold))
                 Text("Gesamt: \(glassCount) × \(selectedSize) ml = \(glassCount * selectedSize) ml")
-                    .font(.subheadline)
+                    .font(.system(size: 20, weight: .semibold))
+                    .monospacedDigit()
             }
-            .padding(10)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
-            .background(Color(.systemGray6))
-            .foregroundColor(.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .foregroundColor(.white)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+            )
+            .overlay(
+                ZStack {
+                    Image(systemName: "water.waves")
+                        .font(.system(size: 70))
+                        .foregroundColor(.white.opacity(0.10))
+                        .rotationEffect(.degrees(8))
+                        .offset(x: 8, y: -8)
+                        .allowsHitTesting(false)
+                    Capsule().strokeBorder(
+                        LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing),
+                        lineWidth: 1.2
+                    )
+                }
+            )
+            .shadow(color: Color.cyan.opacity(0.25), radius: 8, x: 0, y: 4)
             .accessibilityLabel("Gesamte Wassermenge: \(glassCount * selectedSize) Milliliter")
 
             Spacer()
