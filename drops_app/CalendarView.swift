@@ -1,11 +1,95 @@
+// CalendarView: Monatsübersicht mit Streak-/Erfolgsmarkierungen
+// - Markiert abgeschlossene Tage blau
+// - Zeigt eine Flammen-Badge für den heutigen Abschluss
 import SwiftUI
 
 struct CalendarView: View {
+    // Aktuell angezeigter Monat im Kalender
     @State private var displayedMonth: Date = Date()
+    // Vom Nutzer ausgewähltes Datum
     @State private var selectedDate: Date? = nil
     private let calendar = Calendar.current
     
+    // Speichert, ob der heutige Tag abgeschlossen ist (für die Flammenanzeige)
     @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
+
+    // Persistente Menge markierter Tage (als JSON-Array gespeichert)
+    @AppStorage("markedBlueDates") private var markedBlueDatesStorage: String = "[]" // JSON array of strings (yyyy-MM-dd)
+
+    private var markedBlueDates: Set<String> {
+        get {
+            if let data = markedBlueDatesStorage.data(using: .utf8),
+               let array = try? JSONDecoder().decode([String].self, from: data) {
+                return Set(array)
+            }
+            return []
+        }
+        nonmutating set {
+            let array = Array(newValue)
+            if let data = try? JSONEncoder().encode(array),
+               let string = String(data: data, encoding: .utf8) {
+                markedBlueDatesStorage = string
+            }
+        }
+    }
+
+    // Markiert den heutigen Tag als abgeschlossen (setzt Flamme und blauen Marker)
+    func markTodayAsCompleted() {
+        // Set today's flame date so the flame shows "1" and persist the mark
+        let today = Date()
+        let key = dateKey(today)
+
+        // Update the flame date storage for today
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale.current
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        todayFlameDate = formatter.string(from: today)
+
+        // Persist the blue mark for today
+        var set = markedBlueDates
+        set.insert(key)
+        markedBlueDates = set
+    }
+
+    // Öffentliche Helferfunktion: bei Zielerreichung aufrufen
+    func userReachedTenOutOfTenToday() {
+        // Debounce: if already marked for today, do nothing
+        if isTodayMarkedComplete() { return }
+        markTodayAsCompleted()
+    }
+
+    // Setzt Flamme und Markierungen zurück, wenn ein Tag verpasst wurde
+    func resetAllProgressDueToMissedDay() {
+        // Clear the flame indicator (so the badge shows 0)
+        todayFlameDate = ""
+        // Clear all marked blue dates
+        markedBlueDates = []
+    }
+
+    // Reagiert auf Tageswechsel und setzt ggf. Fortschritt zurück
+    func handleDayRollover(previousDayCompleted: Bool) {
+        // If the previous day was not completed, reset everything
+        if !previousDayCompleted {
+            resetAllProgressDueToMissedDay()
+        }
+    }
+
+    // Prüft, ob ein Datum als abgeschlossen markiert ist
+    private func isMarkedBlue(_ date: Date) -> Bool {
+        markedBlueDates.contains(dateKey(date))
+    }
+
+    // Liefert einen stabilen Schlüssel (yyyy-MM-dd) für ein Datum
+    private func dateKey(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale.current
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -78,7 +162,7 @@ struct CalendarView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - Header with month navigation & Today
+    // Kopfbereich mit Monatsnavigation
     private var header: some View {
         HStack(spacing: 12) {
             Button(action: { changeMonth(by: -1) }) {
@@ -159,37 +243,10 @@ struct CalendarView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Nächster Monat")
-
-            Spacer()
-
-            Button(action: { jumpToToday() }) {
-                Text("Heute")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
-                    .background(
-                        Capsule()
-                            .fill(
-                                LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
-                            )
-                    )
-                    .overlay(
-                        Capsule().strokeBorder(
-                            LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing),
-                            lineWidth: 1.5
-                        )
-                    )
-                    .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
-            }
         }
     }
 
-    // MARK: - Weekday header (Mon-Sun)
+    // Wochentags-Kopfzeile (Mo–So)
     private var weekdayHeader: some View {
         let symbols = weekdaySymbolsShort()
         return HStack(spacing: 0) {
@@ -212,7 +269,7 @@ struct CalendarView: View {
         .padding(.top, 4)
     }
 
-    // MARK: - Month grid
+    // Monatsraster mit Tagen
     private var monthGrid: some View {
         let days = daysForMonth()
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 7), spacing: 14) {
@@ -222,13 +279,14 @@ struct CalendarView: View {
         }
     }
 
-    // MARK: - Day cell
+    // Einzelnes Tagesfeld mit Auswahl-/Markierungslogik
     @ViewBuilder
     private func dayCell(for date: Date) -> some View {
         let inMonth = isInDisplayedMonth(date)
         let isToday = self.isToday(date)
 
         let isSelected = (selectedDate == date)
+        let isMarked = isMarkedBlue(date)
 
         let base = ZStack {
             DayBackground(inMonth: inMonth, isSelected: isSelected)
@@ -245,7 +303,36 @@ struct CalendarView: View {
                 .foregroundStyle(inMonth ? Color.primary : Color.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if isToday && isTodayMarkedComplete() {
+            if isMarked {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.blue.opacity(0.26),
+                                Color.cyan.opacity(0.24),
+                                Color.teal.opacity(0.22)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.cyan.opacity(0.35),
+                                Color.blue.opacity(0.25),
+                                Color.clear
+                            ]),
+                            center: .center,
+                            startRadius: 6,
+                            endRadius: 140
+                        )
+                        .blendMode(.plusLighter)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    )
+                    .padding(6)
+                    .allowsHitTesting(false)
+            } else if isToday && isTodayMarkedComplete() {
                 // Inset full-tile blue fire style so the day number remains readable
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
@@ -302,7 +389,21 @@ struct CalendarView: View {
         base
             .aspectRatio(1.0, contentMode: .fit)
             .padding(5)
-            .overlay(selectionOrTodayStroke(isSelected: isSelected, isToday: isToday))
+            .overlay(
+                Group {
+                    if isMarked {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(colors: [Color.blue.opacity(0.9), Color.cyan.opacity(0.9)],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing),
+                                lineWidth: 2
+                            )
+                    } else {
+                        selectionOrTodayStroke(isSelected: isSelected, isToday: isToday)
+                    }
+                }
+            )
             .shadow(color: isToday ? Color.cyan.opacity(0.25) : Color.clear, radius: 6, x: 0, y: 2)
             .onTapGesture { selectedDate = date }
             .contentShape(Rectangle())
@@ -310,6 +411,7 @@ struct CalendarView: View {
             .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
+    // Hintergrunddarstellung eines Tagesfeldes (abhängig von Zustand)
     private struct DayBackground: View {
         let inMonth: Bool
         let isSelected: Bool
@@ -340,6 +442,7 @@ struct CalendarView: View {
         }
     }
 
+    // Rahmen je nach Zustand (ausgewählt/heute)
     @ViewBuilder
     private func selectionOrTodayStroke(isSelected: Bool, isToday: Bool) -> some View {
         if isSelected {
@@ -363,7 +466,7 @@ struct CalendarView: View {
         }
     }
 
-    // MARK: - Helpers
+    // Hilfsfunktion: Monat wechseln
     private func changeMonth(by offset: Int) {
         if let newDate = calendar.date(byAdding: .month, value: offset, to: displayedMonth) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -372,12 +475,14 @@ struct CalendarView: View {
         }
     }
 
+    // Hilfsfunktion: Zu heute springen
     private func jumpToToday() {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             displayedMonth = Date()
         }
     }
 
+    // Hilfsfunktion: Monatstitel
     private func monthTitle(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -386,6 +491,7 @@ struct CalendarView: View {
         return formatter.string(from: startOfMonth(for: date)).capitalized
     }
 
+    // Hilfsfunktion: Jahrestitel
     private func yearTitle(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -394,6 +500,7 @@ struct CalendarView: View {
         return formatter.string(from: startOfMonth(for: date))
     }
 
+    // Hilfsfunktion: Kurze Wochentagssymbole
     private func weekdaySymbolsShort() -> [String] {
         var symbols = calendar.shortStandaloneWeekdaySymbols
         let firstWeekdayIndex = calendar.firstWeekday - 1
@@ -405,11 +512,13 @@ struct CalendarView: View {
         return symbols.map { String($0.prefix(2)) }
     }
 
+    // Hilfsfunktion: Monatserster
     private func startOfMonth(for date: Date) -> Date {
         let comps = calendar.dateComponents([.year, .month], from: date)
         return calendar.date(from: comps) ?? date
     }
 
+    // Hilfsfunktion: Tage des Monats
     private func daysForMonth() -> [Date] {
         let start = startOfMonth(for: displayedMonth)
         guard let range = calendar.range(of: .day, in: .month, for: start) else { return [] }
@@ -434,19 +543,23 @@ struct CalendarView: View {
         return days
     }
 
+    // Hilfsfunktion: Datum liegt im angezeigten Monat?
     private func isInDisplayedMonth(_ date: Date) -> Bool {
         calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month)
     }
 
+    // Hilfsfunktion: Ist heute?
     private func isToday(_ date: Date) -> Bool {
         calendar.isDateInToday(date)
     }
 
+    // Hilfsfunktion: Tageszahl-Label
     private func dayLabel(for date: Date) -> String {
         let day = calendar.component(.day, from: date)
         return "\(day)"
     }
 
+    // Hilfsfunktion: Accessibility-Label
     private func accessibilityLabel(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -455,6 +568,7 @@ struct CalendarView: View {
         return formatter.string(from: date)
     }
     
+    // Hilfsfunktion: Ist der heutige Tag abgeschlossen?
     private func isTodayMarkedComplete() -> Bool {
         guard !todayFlameDate.isEmpty else { return false }
         let formatter = DateFormatter()
