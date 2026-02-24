@@ -25,7 +25,7 @@ struct ReminderSettingsView: View {
                 Image(systemName: "water.waves")
                     .imageScale(.large)
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-               
+
                 Text("Erinnerungen")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -35,29 +35,42 @@ struct ReminderSettingsView: View {
             // Bereich: Schalter für Erinnerungen
             VStack(spacing: 16) {
                 Toggle(isOn: $reminderEnabled) {
-                    Label("Erinnerungen aktivieren", systemImage: "bell")
+                    HStack(spacing: 8) {
+                        Image(systemName: "bell")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        Text("Erinnerungen aktivieren")
+                            .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    }
                 }
-                .tint(.blue)
+                .tint(.teal)
 
                 Toggle(isOn: $reminderInteractive) {
-                    Label("Interaktive Erinnerungen", systemImage: "hand.tap")
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.tap")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        Text("Interaktive Erinnerungen")
+                            .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    }
                 }
-                .tint(.blue)
+                .tint(.teal)
                 .disabled(!reminderEnabled)
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.systemBackground))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .strokeBorder(
-                                LinearGradient(colors: [Color.blue.opacity(0.35), Color.cyan.opacity(0.35)],
+                                LinearGradient(colors: [Color.blue.opacity(0.45), Color.cyan.opacity(0.45)],
                                                startPoint: .topLeading,
                                                endPoint: .bottomTrailing),
                                 lineWidth: 1.5
                             )
                     )
+                    .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
                     .overlay(
                         Image(systemName: "water.waves")
                             .font(.system(size: 76))
@@ -72,6 +85,7 @@ struct ReminderSettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Uhrzeit")
                     .font(.headline)
+                    .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                 DatePicker("Uhrzeit wählen", selection: $reminderDate, displayedComponents: .hourAndMinute)
                     .datePickerStyle(WheelDatePickerStyle())
                     .labelsHidden()
@@ -81,17 +95,18 @@ struct ReminderSettingsView: View {
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.systemBackground))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .strokeBorder(
-                                LinearGradient(colors: [Color.blue.opacity(0.35), Color.cyan.opacity(0.35)],
+                                LinearGradient(colors: [Color.blue.opacity(0.45), Color.cyan.opacity(0.45)],
                                                startPoint: .topLeading,
                                                endPoint: .bottomTrailing),
                                 lineWidth: 1.5
                             )
                     )
+                    .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
                     .overlay(
                         Image(systemName: "water.waves")
                             .font(.system(size: 76))
@@ -107,21 +122,26 @@ struct ReminderSettingsView: View {
         .padding()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .tint(.teal)
 
         // Toolbar mit Zurück- und Sichern-Aktionen
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
+                        .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                 }
                 .accessibilityLabel("Zurück")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Sichern") {
+                Button(action: {
                     saveAndSchedule()
                     dismiss()
+                }) {
+                    Text("Sichern")
+                        .bold()
+                        .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                 }
-                .bold()
                 .disabled(!reminderEnabled)
             }
         }
@@ -166,6 +186,60 @@ struct ReminderSettingsView: View {
         } else {
             NotificationManager.cancelDailyReminders()
         }
+    }
+}
+
+// MARK: - WaveView for ocean style
+struct WaveView: Shape {
+    var amplitude: CGFloat
+    var frequency: CGFloat
+    var phase: CGFloat = 0
+    var phaseSpeed: CGFloat = 1
+
+    var animatableData: CGFloat {
+        get { phase }
+        set { phase = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let midY = rect.midY
+        let width = rect.width
+        let step = max(1, width / 120)
+
+        path.move(to: CGPoint(x: 0, y: midY))
+        var x: CGFloat = 0
+        while x <= width {
+            let relativeX = x / rect.width
+            let y = midY + sin((relativeX * .pi * 2 * frequency) + phase) * amplitude
+            path.addLine(to: CGPoint(x: x, y: y))
+            x += step
+        }
+        // Close shape to bottom
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+        return path
+    }
+}
+
+extension View {
+    func animatedWave(phaseSpeed: CGFloat) -> some View {
+        self.modifier(WaveAnimationModifier(phaseSpeed: phaseSpeed))
+    }
+}
+
+private struct WaveAnimationModifier: ViewModifier {
+    @State private var phase: CGFloat = 0
+    var phaseSpeed: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
+                    phase = .pi * 2 * phaseSpeed
+                }
+            }
     }
 }
 
