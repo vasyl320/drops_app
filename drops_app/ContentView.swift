@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Startansicht mit App-Branding und Navigation zum Zähler (CounterPageView)
 struct ContentView: View {
     // Local wrappers to avoid ambiguous type names elsewhere in the project
     private struct SettingsScreen: View {
@@ -19,12 +20,14 @@ struct ContentView: View {
     }
 
     var body: some View {
+        // Navigation-Container für die Startseite
         NavigationStack {
             ZStack(alignment: .bottom) {
                 VStack {
                     Spacer()
                     Spacer()
 
+                    // App-Logo/Illustration
                     Image("drop")
                         .resizable()
                         .scaledToFit()
@@ -35,6 +38,7 @@ struct ContentView: View {
                         .foregroundColor(.black)
                         .padding(.top, 22)
 
+                    // Haupt-Button: führt zum Zähler (CounterPageView)
                     NavigationLink {
                         CounterPageView()
                     } label: {
@@ -49,6 +53,7 @@ struct ContentView: View {
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 56)
+                        // Optik: Verlaufshintergrund im Kapsel-Stil
                         .background(
                             Capsule()
                                 .fill(
@@ -57,6 +62,7 @@ struct ContentView: View {
                                                    endPoint: .bottomTrailing)
                                 )
                         )
+                        // Optik: Wasserwellen-Overlay und glänzende Kontur
                         .overlay(
                             ZStack {
                                 // Subtle water waves overlay
@@ -75,6 +81,7 @@ struct ContentView: View {
                                 )
                             }
                         )
+                        // Weicher Schatten für Tiefe
                         .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
                     }
                     .padding(.top, 24)
@@ -93,3 +100,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
