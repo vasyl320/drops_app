@@ -39,7 +39,7 @@ struct ReminderSettingsView: View {
                         Image(systemName: "bell")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        Text("Erinnerungen aktivieren")
+                        Text("Festgelegte Erinnerung")
                             .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                     }
                 }
@@ -50,12 +50,15 @@ struct ReminderSettingsView: View {
                         Image(systemName: "hand.tap")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        Text("Interaktive Erinnerungen")
+                        Text("Interaktive Erinnerung")
                             .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                     }
                 }
                 .tint(.teal)
-                .disabled(!reminderEnabled)
+                if !reminderEnabled {
+                    .disabled(!reminderEnabled)
+                    
+                }
             }
             .padding()
             .background(
