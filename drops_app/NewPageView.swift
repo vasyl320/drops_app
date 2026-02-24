@@ -94,7 +94,7 @@ struct CounterPageView: View {
                 ZStack {
                     // Voll – Ziel erreicht: zeige runden Navigations-Button zum Kalender
                     if zaehler == maxGlasses {
-                        // Blue fire badge in sea style when full (10/10)
+                        // Blue fire badge in sea style when full
                         NavigationLink {
                             CalendarView()
                         } label: {
@@ -153,9 +153,10 @@ struct CounterPageView: View {
                             .contentShape(Circle())
                             .accessibilityLabel("Zum Kalender")
                         }
+                        .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .offset(y: -200)
-                        .zIndex(1)
+                        .offset(y: -300)
+                        .zIndex(2)
                         .transition(.scale.combined(with: .opacity))
                         .scaleEffect(flamePulse ? 1.06 : 1.0)
                         .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: flamePulse)
@@ -169,9 +170,7 @@ struct CounterPageView: View {
                             glowPulse = false
                         }
                         .symbolEffect(.pulse.byLayer, options: .repeating.speed(1.2))
-                    } 
-                    // Nicht leer: zeige Zurück-Button zum Reduzieren
-                    else if zaehler > 0 {
+                    } else if zaehler > 0 {
                         Button(action: {
                             let generator = UIImpactFeedbackGenerator(style: .light)
                             generator.impactOccurred()
