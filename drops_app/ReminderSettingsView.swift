@@ -44,6 +44,7 @@ struct ReminderSettingsView: View {
                     }
                 }
                 .tint(.teal)
+                .disabled(reminderInteractive)
 
                 Toggle(isOn: $reminderInteractive) {
                     HStack(spacing: 8) {
@@ -55,10 +56,7 @@ struct ReminderSettingsView: View {
                     }
                 }
                 .tint(.teal)
-                if !reminderEnabled {
-                    .disabled(!reminderEnabled)
-                    
-                }
+                .disabled(reminderEnabled)
             }
             .padding()
             .background(
@@ -152,14 +150,16 @@ struct ReminderSettingsView: View {
         // Beim Öffnen: Uhrzeit aus gespeicherten Werten laden
         .onAppear { syncDateFromStorage() }
 
-        // Wenn Ein-/Ausschalten geändert wird: sofort speichern/planen
+        // Wenn Ein-/Ausschalten geändert wird: sofort speichern/planen und gegenseitige Sperre beachten
         .onChange(of: reminderEnabled) { _, newValue in
             // live update when toggling
+            if newValue { reminderInteractive = false }
             saveAndSchedule()
         }
-        // Wenn Interaktivität geändert wird: bei aktivierten Erinnerungen neu planen
+        // Wenn Interaktivität geändert wird: gegenseitige Sperre beachten und speichern/planen
         .onChange(of: reminderInteractive) { _, newValue in
-            if reminderEnabled { saveAndSchedule() }
+            if newValue { reminderEnabled = false }
+            saveAndSchedule()
         }
         // Wenn Uhrzeit geändert wird: bei aktivierten Erinnerungen neu planen
         .onChange(of: reminderDate) { _, newValue in
@@ -179,6 +179,11 @@ struct ReminderSettingsView: View {
         let comps = Calendar.current.dateComponents([.hour, .minute], from: reminderDate)
         reminderHour = comps.hour ?? 9
         reminderMinute = comps.minute ?? 0
+
+        // Ensure mutual exclusivity at scheduling time
+        if reminderEnabled && reminderInteractive {
+            reminderInteractive = false
+        }
 
         if reminderEnabled {
             NotificationManager.requestAuthorization { granted in

@@ -337,11 +337,18 @@ struct CounterPageView: View {
                 zaehler = 0
                 lastCountDate = today
             }
+            // Clamp current count to current goal when appearing
+            let currentGoal = max(1, targetGlasses)
+            if zaehler > currentGoal {
+                zaehler = currentGoal
+            }
         }
-        // Ziel geändert: Zähler zurücksetzen und Datum aktualisieren
+        // Ziel geändert: aktuellen Stand beibehalten, ggf. auf neues Ziel begrenzen
         .onChange(of: targetGlasses) { _, newValue in
-            // Reset counter whenever the glass target changes
-            zaehler = 0
+            let newGoal = max(1, newValue)
+            if zaehler > newGoal {
+                zaehler = newGoal
+            }
             lastCountDate = todayKey()
         }
         .padding()
