@@ -138,8 +138,7 @@ struct CalendarView: View {
                         .shadow(color: Color.cyan.opacity(0.5), radius: 6, x: 0, y: 2)
                         .opacity(0.95)
 
-                    // Centered number inside the flame
-                    Text(isTodayMarkedComplete() ? "1" : "0")
+                    Text("\(currentStreakCount())")
                         .font(.system(size: 52, weight: .black, design: .rounded))
                         .foregroundStyle(Color.white)
                         .shadow(color: Color.blue.opacity(0.35), radius: 5, x: 0, y: 2)
@@ -298,111 +297,32 @@ struct CalendarView: View {
                 .offset(x: 6, y: -6)
                 .allowsHitTesting(false)
 
-            Text(dayLabel(for: date))
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundStyle(inMonth ? Color.primary : Color.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if isMarked {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.blue.opacity(0.26),
-                                Color.cyan.opacity(0.24),
-                                Color.teal.opacity(0.22)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+            if isMarked || (isToday && isTodayMarkedComplete()) {
+                // Completed: show centered flame only (no background)
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(
+                        LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
                     )
-                    .overlay(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color.cyan.opacity(0.35),
-                                Color.blue.opacity(0.25),
-                                Color.clear
-                            ]),
-                            center: .center,
-                            startRadius: 6,
-                            endRadius: 140
-                        )
-                        .blendMode(.plusLighter)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    )
-                    .padding(6)
+                    .shadow(color: Color.cyan.opacity(0.35), radius: 2, x: 0, y: 1)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .allowsHitTesting(false)
-            } else if isToday && isTodayMarkedComplete() {
-                // Inset full-tile blue fire style so the day number remains readable
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.blue.opacity(0.22),
-                                Color.cyan.opacity(0.20),
-                                Color.teal.opacity(0.18)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color.cyan.opacity(0.35),
-                                Color.blue.opacity(0.25),
-                                Color.clear
-                            ]),
-                            center: .center,
-                            startRadius: 6,
-                            endRadius: 140
-                        )
-                        .blendMode(.plusLighter)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    )
-                    .overlay(
-                        ZStack {
-                            LinearGradient(
-                                colors: [Color.cyan.opacity(0.16), Color.clear],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .rotationEffect(.degrees(5))
-                            .offset(x: -6, y: -6)
-
-                            LinearGradient(
-                                colors: [Color.blue.opacity(0.14), Color.clear],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            .rotationEffect(.degrees(-6))
-                            .offset(x: 8, y: 10)
-                        }
-                        .blendMode(.plusLighter)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    )
-                    .padding(6)
-                    .allowsHitTesting(false)
+            } else {
+                Text(dayLabel(for: date))
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(inMonth ? Color.primary : Color.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+
+            // Removed the blue highlight overlays for completed days
+            
         }
 
         base
             .aspectRatio(1.0, contentMode: .fit)
             .padding(5)
             .overlay(
-                Group {
-                    if isMarked {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(
-                                LinearGradient(colors: [Color.blue.opacity(0.9), Color.cyan.opacity(0.9)],
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing),
-                                lineWidth: 2
-                            )
-                    } else {
-                        selectionOrTodayStroke(isSelected: isSelected, isToday: isToday)
-                    }
-                }
+                selectionOrTodayStroke(isSelected: isSelected, isToday: isToday)
             )
             .shadow(color: isToday ? Color.cyan.opacity(0.25) : Color.clear, radius: 6, x: 0, y: 2)
             .onTapGesture { selectedDate = date }
@@ -474,7 +394,7 @@ struct CalendarView: View {
             }
         }
     }
-
+    
     // Hilfsfunktion: Zu heute springen
     private func jumpToToday() {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -577,6 +497,23 @@ struct CalendarView: View {
         formatter.dateFormat = "yyyy-MM-dd"
         let todayString = formatter.string(from: Date())
         return todayFlameDate == todayString
+    }
+    
+    // Hilfsfunktion: Aktuelle Streak-Länge (aufeinanderfolgende abgeschlossene Tage bis heute)
+    private func currentStreakCount() -> Int {
+        var count = 0
+        var cursor = Date()
+        while true {
+            let key = dateKey(cursor)
+            if markedBlueDates.contains(key) {
+                count += 1
+                guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
+                cursor = prev
+            } else {
+                break
+            }
+        }
+        return count
     }
 }
 
