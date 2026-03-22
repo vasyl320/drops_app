@@ -60,12 +60,10 @@ struct CalendarView: View {
         markTodayAsCompleted()
     }
 
-    // Setzt Flamme und Markierungen zurück, wenn ein Tag verpasst wurde
+    // Setzt nur die heutige Flammenanzeige zurück; markierte Tage bleiben dauerhaft erhalten
     func resetAllProgressDueToMissedDay() {
         // Clear the flame indicator (so the badge shows 0)
         todayFlameDate = ""
-        // Clear all marked blue dates
-        markedBlueDates = []
     }
 
     // Reagiert auf Tageswechsel und setzt ggf. Fortschritt zurück
