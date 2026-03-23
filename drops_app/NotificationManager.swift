@@ -1,3 +1,4 @@
+// Benachrichtigungsverwaltung für tägliche Erinnerungen
 import Foundation
 import UserNotifications
 
@@ -14,10 +15,10 @@ enum NotificationManager {
     static func scheduleDailyReminder(hour: Int, minute: Int, interactive: Bool) {
         let center = UNUserNotificationCenter.current()
 
-        // Remove previous pending requests for our identifiers
+        // Entferne vorherige ausstehende Anfragen für unsere Bezeichner
         center.removePendingNotificationRequests(withIdentifiers: ["dailyReminder", "dailyReminderNudge"]) 
 
-        // Main daily reminder
+        // Haupttägliche Erinnerung
         let content = UNMutableNotificationContent()
         content.title = "Zeit zum Trinken"
         content.body = "Bleib hydratisiert und trinke ein Glas Wasser."
@@ -31,7 +32,7 @@ enum NotificationManager {
         let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
         center.add(request)
 
-        // Optional second gentle nudge if interactive mode is enabled
+        // Optionale zweite sanfte Erinnerung, wenn der interaktive Modus aktiviert ist
         if interactive {
             let nudgeContent = UNMutableNotificationContent()
             nudgeContent.title = "Sanfte Erinnerung"
@@ -50,6 +51,7 @@ enum NotificationManager {
     }
 
     static func cancelDailyReminders() {
+        // Ausstehende Anfragen für unsere Bezeichner entfernen
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ["dailyReminder", "dailyReminderNudge"]) 
     }

@@ -3,10 +3,10 @@ import SwiftUI
 // Startansicht mit App-Branding und Navigation zum Zähler (CounterPageView)
 struct ContentView: View {
 
-    // Local wrappers to avoid ambiguous type names elsewhere in the project
+    // Lokale Wrapper, um mehrdeutige Typnamen im Projekt zu vermeiden
     private struct SettingsScreen: View {
         var body: some View {
-            // TODO: Replace with the intended Settings view in your project
+            // TODO: Hier die tatsächliche Einstellungen-Ansicht des Projekts einfügen
             Text("Settings")
                 .navigationTitle("Einstellungen")
         }
@@ -14,7 +14,7 @@ struct ContentView: View {
 
     private struct CalendarScreen: View {
         var body: some View {
-            // TODO: Replace with the intended Calendar view in your project
+            // TODO: Hier die tatsächliche Kalender-Ansicht des Projekts einfügen
             Text("Kalender")
                 .navigationTitle("Kalender")
         }
@@ -54,7 +54,7 @@ struct ContentView: View {
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 56)
-                        // Optik: VerlaufshintergrJJJJund im Kapsel-Stil
+                        // Optik: Verlaufshintergrund im Kapsel-Stil
                         .background(
                             Capsule()
                                 .fill(
@@ -67,14 +67,7 @@ struct ContentView: View {
                         .overlay(
                             ZStack {
                             
-                                Image(systemName: "water.waves")
-                                    .font(.system(size: 64))
-                                    .foregroundColor(.white.opacity(0.10))
-                                    .rotationEffect(.degrees(8))
-                                    .offset(x: 8, y: -8)
-                                    .allowsHitTesting(false)
-
-                                // Glossy stroke
+                                // Glänzender Rand
                                 Capsule().strokeBorder(
                                     LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                                    startPoint: .topLeading,
@@ -89,7 +82,7 @@ struct ContentView: View {
                     .padding(.top, 24)
 
                     Spacer()
-                    // Removed central NavigationLink button
+                    // Zentralen NavigationLink-Button entfernt
                     Spacer()
                     Spacer()
                 }

@@ -73,13 +73,6 @@ struct CounterPageView: View {
                             )
                             .opacity(0.9)
                     )
-                    // Subtiles Wasserwellen-Overlay als Akzent
-                    Image(systemName: "water.waves")
-                        .font(.system(size: 90, weight: .regular))
-                        .foregroundColor(.blue.opacity(0.06))
-                        .rotationEffect(.degrees(8))
-                        .offset(x: 14, y: -18)
-                        .allowsHitTesting(false)
                 }
                 .padding(.top, 70)
                 .animation(.easeInOut(duration: 0.2), value: zaehler)
@@ -101,14 +94,6 @@ struct CounterPageView: View {
                                                        endPoint: .bottomTrailing)
                                     )
                                     .frame(width: 100, height: 100)
-                                    .overlay(
-                                        Image(systemName: "water.waves")
-                                            .font(.system(size: 80, weight: .regular))
-                                            .foregroundColor(.white.opacity(0.12))
-                                            .rotationEffect(.degrees(8))
-                                            .offset(x: 6, y: -6)
-                                            .clipShape(Circle())
-                                    )
                                     .overlay(
                                         Circle().strokeBorder(
                                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
@@ -189,14 +174,6 @@ struct CounterPageView: View {
                                         )
                                 )
                                 .overlay(
-                                    Image(systemName: "water.waves")
-                                        .font(.system(size: 64, weight: .regular))
-                                        .foregroundColor(.white.opacity(0.12))
-                                        .rotationEffect(.degrees(8))
-                                        .offset(x: 4, y: -4)
-                                        .clipShape(Circle())
-                                )
-                                .overlay(
                                     Circle().strokeBorder(
                                         LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                                        startPoint: .topLeading,
@@ -262,14 +239,6 @@ struct CounterPageView: View {
                                 )
                         )
                         .overlay(
-                            Image(systemName: "water.waves")
-                                .font(.system(size: 64, weight: .regular))
-                                .foregroundColor(.white.opacity(0.12))
-                                .rotationEffect(.degrees(8))
-                                .offset(x: 4, y: -4)
-                                .clipShape(Circle())
-                        )
-                        .overlay(
                             Circle().strokeBorder(
                                 LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                                startPoint: .topLeading,
@@ -297,14 +266,6 @@ struct CounterPageView: View {
                                                    startPoint: .topLeading,
                                                    endPoint: .bottomTrailing)
                                 )
-                        )
-                        .overlay(
-                            Image(systemName: "water.waves")
-                                .font(.system(size: 64, weight: .regular))
-                                .foregroundColor(.white.opacity(0.12))
-                                .rotationEffect(.degrees(8))
-                                .offset(x: 4, y: -4)
-                                .clipShape(Circle())
                         )
                         .overlay(
                             Circle().strokeBorder(

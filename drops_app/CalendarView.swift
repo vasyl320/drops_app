@@ -17,7 +17,7 @@ struct CalendarView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            // External app name/title above the calendar
+            // Titel über dem Kalender
             Text("Streak-Kalender")
                 .font(.system(size: 44, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.blue)
@@ -26,11 +26,11 @@ struct CalendarView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
             
-            // Large centered "fire in sea" badge
+            // Großes zentriertes Flammen‑Badge
             ZStack {
-                // Minimal, clean flame without background fill
+                // Minimale, klare Flamme ohne Hintergrundfüllung
                 ZStack {
-                    // Subtle ring (no solid background)
+                    // Feiner Ring (kein ausgefüllter Hintergrund)
                     Circle()
                         .stroke(
                             LinearGradient(colors: [Color.cyan.opacity(0.6), Color.blue.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing),
@@ -38,7 +38,7 @@ struct CalendarView: View {
                         )
                         .shadow(color: Color.cyan.opacity(0.25), radius: 6, x: 0, y: 2)
 
-                    // Soft glow (very light)
+                    // Sanfter Leuchteffekt (sehr dezent)
                     Circle()
                         .fill(
                             RadialGradient(
@@ -53,7 +53,7 @@ struct CalendarView: View {
                         )
                         .blendMode(.plusLighter)
 
-                    // Flame icon
+                    // Flammen‑Symbol
                     Image(systemName: "flame.fill")
                         .font(.system(size: 100, weight: .bold))
                         .foregroundStyle(
@@ -72,7 +72,7 @@ struct CalendarView: View {
             .padding(.bottom, 8)
             .accessibilityHidden(true)
 
-            // Existing calendar stack
+            // Kalender-Stack
             VStack(spacing: 20) {
                 header
                 weekdayHeader
@@ -112,14 +112,6 @@ struct CalendarView: View {
                             )
                     )
                     .overlay(
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 44, weight: .regular))
-                            .foregroundColor(.white.opacity(0.10))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 4, y: -4)
-                            .clipShape(Circle())
-                    )
-                    .overlay(
                         Circle().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,
@@ -154,14 +146,6 @@ struct CalendarView: View {
                                                startPoint: .topLeading,
                                                endPoint: .bottomTrailing)
                             )
-                    )
-                    .overlay(
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 44, weight: .regular))
-                            .foregroundColor(.white.opacity(0.10))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 4, y: -4)
-                            .clipShape(Circle())
                     )
                     .overlay(
                         Circle().strokeBorder(
@@ -224,15 +208,8 @@ struct CalendarView: View {
         let base = ZStack {
             DayBackground(inMonth: inMonth, isSelected: isSelected)
 
-            Image(systemName: "water.waves")
-                .font(.system(size: 42, weight: .regular))
-                .foregroundColor(.white.opacity(inMonth ? 0.06 : 0.0))
-                .rotationEffect(.degrees(8))
-                .offset(x: 6, y: -6)
-                .allowsHitTesting(false)
-
             if isMarked || (isToday && streakManager.isTodayMarkedComplete()) {
-                // Completed: show centered flame only (no background)
+                // Abgeschlossen: nur zentrierte Flamme anzeigen (kein Hintergrund)
                 Image(systemName: "flame.fill")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(
@@ -248,7 +225,7 @@ struct CalendarView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            // Removed the blue highlight overlays for completed days
+            // Die blauen Hervorhebungs-Overlays für abgeschlossene Tage wurden entfernt
             
         }
 

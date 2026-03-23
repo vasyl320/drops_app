@@ -14,7 +14,7 @@ struct SettingsView: View {
             Spacer()
 
             // Formel-Box: zeigt live die Gesamtsumme in ml
-            // Formel-Box: Gesamtmenge = Anzahl × ml (enhanced visibility)
+            // Formel-Box: Gesamtmenge = Anzahl × ml (bessere Sichtbarkeit)
             HStack(spacing: 10) {
                 Image(systemName: "sum")
                     .font(.system(size: 22, weight: .bold))
@@ -36,12 +36,6 @@ struct SettingsView: View {
             )
             .overlay(
                 ZStack {
-                    Image(systemName: "water.waves")
-                        .font(.system(size: 70))
-                        .foregroundColor(.white.opacity(0.10))
-                        .rotationEffect(.degrees(8))
-                        .offset(x: 8, y: -8)
-                        .allowsHitTesting(false)
                     Capsule().strokeBorder(
                         LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                        startPoint: .topLeading,
@@ -56,7 +50,7 @@ struct SettingsView: View {
             Spacer()
 
             // Button: Portionsgröße wählen
-            // First big button
+            // Erster großer Button
             NavigationLink(destination: PortionSizePickerView()) {
                 HStack(spacing: 10) {
                     Text("Portionsgröße wählen")
@@ -79,14 +73,7 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        // Subtle water waves overlay
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 76))
-                            .foregroundColor(.white.opacity(0.10))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 8, y: -8)
-                            .allowsHitTesting(false)
-                        // Glossy stroke
+                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,
@@ -100,7 +87,7 @@ struct SettingsView: View {
             }
 
             // Button: Anzahl Gläser wählen
-            // Second big button
+            // Zweiter großer Button
             NavigationLink(destination: GlassCountPickerView()) {
                 HStack(spacing: 10) {
                     Text("Anzahl Gläser wählen")
@@ -123,12 +110,7 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 76))
-                            .foregroundColor(.white.opacity(0.10))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 8, y: -8)
-                            .allowsHitTesting(false)
+                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,
@@ -142,7 +124,7 @@ struct SettingsView: View {
             }
 
             // Button: Erinnerungen konfigurieren
-            // Third big button
+            // Dritter großer Button
             NavigationLink(destination: ReminderSettingsView()) {
                 HStack(spacing: 10) {
                     Text("Erinnerungen")
@@ -165,14 +147,7 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        // Subtle water waves overlay
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 76))
-                            .foregroundColor(.white.opacity(0.10))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 8, y: -8)
-                            .allowsHitTesting(false)
-                        // Glossy stroke
+                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,

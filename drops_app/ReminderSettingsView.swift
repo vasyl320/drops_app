@@ -132,7 +132,7 @@ struct ReminderSettingsView: View {
 
         // Wenn Ein-/Ausschalten geändert wird: sofort speichern/planen und gegenseitige Sperre beachten
         .onChange(of: reminderEnabled) { _, newValue in
-            // live update when toggling
+            // Live-Aktualisierung beim Umschalten
             if newValue { reminderInteractive = false }
             saveAndSchedule()
         }
@@ -160,7 +160,7 @@ struct ReminderSettingsView: View {
         reminderHour = comps.hour ?? 9
         reminderMinute = comps.minute ?? 0
 
-        // Ensure mutual exclusivity at scheduling time
+        // Gegenseitigen Ausschluss beim Planen sicherstellen
         if reminderEnabled && reminderInteractive {
             reminderInteractive = false
         }
@@ -177,7 +177,7 @@ struct ReminderSettingsView: View {
     }
 }
 
-// MARK: - WaveView for ocean style
+// MARK: - WaveView für Ozean-Stil
 struct WaveView: Shape {
     var amplitude: CGFloat
     var frequency: CGFloat
@@ -203,7 +203,7 @@ struct WaveView: Shape {
             path.addLine(to: CGPoint(x: x, y: y))
             x += step
         }
-        // Close shape to bottom
+        // Form nach unten schließen
         path.addLine(to: CGPoint(x: rect.width, y: rect.height))
         path.addLine(to: CGPoint(x: 0, y: rect.height))
         path.closeSubpath()

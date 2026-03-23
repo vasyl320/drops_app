@@ -7,14 +7,14 @@ final class StreakManager: ObservableObject {
 
     private let calendar: Calendar = .current
 
-    // Storage keys
-    private let markedBlueDatesKey = "markedBlueDates" // JSON array of strings (yyyy-MM-dd)
+    // Speicherschlüssel
+    private let markedBlueDatesKey = "markedBlueDates" // JSON-Array von Strings (yyyy-MM-dd)
     private let todayFlameDateKey = "todayFlameDate"
 
-    // Persisted values via AppStorage-like UserDefaults access (usable outside Views)
+    // Persistierte Werte über AppStorage-ähnlichen UserDefaults-Zugriff (außerhalb von Views nutzbar)
     private var defaults: UserDefaults { .standard }
 
-    // MARK: - Persistence wrappers
+    // MARK: - Persistenz-Wrapper
     private var markedBlueDates: Set<String> {
         get {
             guard let string = defaults.string(forKey: markedBlueDatesKey),
@@ -39,16 +39,16 @@ final class StreakManager: ObservableObject {
         set { defaults.set(newValue, forKey: todayFlameDateKey); objectWillChange.send() }
     }
 
-    // MARK: - Public API
+    // MARK: - Öffentliche API
 
     func markTodayCompleted() {
         let today = Date()
         let key = dateKey(today)
 
-        // Update flame date to today (for showing badge if needed)
+        // Flammen-Datum auf heute setzen (für Anzeige eines Badges, falls benötigt)
         todayFlameDate = key
 
-        // Persist completed day
+        // Abgeschlossenen Tag speichern
         var set = markedBlueDates
         set.insert(key)
         markedBlueDates = set
@@ -58,21 +58,21 @@ final class StreakManager: ObservableObject {
         markedBlueDates.contains(dateKey(date))
     }
 
-    // Delayed reset semantics:
-    // - Streak represents consecutive days up to the most recent completed day
-    // - If yesterday was missed (a gap > 1 day to the latest completion), return 0
-    // - Otherwise count consecutive backward from the latest completed day
+    // Verzögerte Zurücksetzlogik:
+    // - Der Streak repräsentiert aufeinanderfolgende Tage bis zum zuletzt abgeschlossenen Tag
+    // - Wenn der gestrige Tag verpasst wurde (Lücke > 1 Tag bis zur letzten Erfassung), dann 0 zurückgeben
+    // - Andernfalls rückwärts ab dem zuletzt abgeschlossenen Tag die aufeinanderfolgenden Tage zählen
     func currentStreakCount(referenceDate: Date = Date()) -> Int {
-        // Find the most recent completed day that is <= today
+        // Ermittle den zuletzt abgeschlossenen Tag, der <= heute ist
         let latestCompleted = mostRecentCompletedDate(upTo: referenceDate)
         guard let start = latestCompleted else { return 0 }
 
-        // Ensure there is no gap: latest completed must be either today or yesterday
+        // Sicherstellen, dass keine Lücke besteht: Der letzte abgeschlossene Tag muss heute oder gestern sein
         if let daysGap = calendar.dateComponents([.day], from: start.stripTime(using: calendar), to: referenceDate.stripTime(using: calendar)).day, daysGap > 1 {
             return 0
         }
 
-        // Count consecutive days backward from start
+        // Aufeinanderfolgende Tage rückwärts ab Start zählen
         var count = 0
         var cursor = start
         while true {
@@ -87,22 +87,22 @@ final class StreakManager: ObservableObject {
         return count
     }
 
-    // Optional: for UI badges that show whether today was completed
+    // Optional: für UI-Badges, die anzeigen, ob heute abgeschlossen wurde
     func isTodayMarkedComplete() -> Bool {
         let todayKey = dateKey(Date())
         return todayFlameDate == todayKey
     }
 
-    // Helper to get most recent completed date up to a reference
+    // Hilfsfunktion: ermittelt das zuletzt abgeschlossene Datum bis zu einem Referenzdatum
     private func mostRecentCompletedDate(upTo referenceDate: Date) -> Date? {
-        // Fast path: check today, then yesterday
+        // Schneller Pfad: heute prüfen, dann gestern
         let today = referenceDate.stripTime(using: calendar)
         if isDateCompleted(today) { return today }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), isDateCompleted(yesterday) { return yesterday }
 
-        // Fallback: scan backwards until a reasonable limit (e.g., 2 years)
+        // Fallback: rückwärts scannen bis zu einem sinnvollen Limit (z. B. 2 Jahre)
         var cursor = today
-        for _ in 0..<730 { // ~2 years
+        for _ in 0..<730 { // ~2 Jahre
             guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
             cursor = prev
             if isDateCompleted(cursor) { return cursor }
@@ -110,7 +110,7 @@ final class StreakManager: ObservableObject {
         return nil
     }
 
-    // MARK: - Utilities
+    // MARK: - Hilfsfunktionen
     func dateKey(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar

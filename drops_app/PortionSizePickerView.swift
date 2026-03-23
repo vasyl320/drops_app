@@ -11,7 +11,7 @@ struct PortionSizePickerView: View {
     private let sizes: [Int] = Array(stride(from: 200, through: 500, by: 50))
     @Environment(\.dismiss) private var dismiss // Zum Zurücknavigieren (eigener Zurück-Button)
     
-    // Extracted row to ease type-checking
+    // Ausgelagerte Zeile zur Vereinfachung der Typprüfung
     @ViewBuilder
     private func row(for size: Int) -> some View {
         let isSelected: Bool = (size == selectedSize)
