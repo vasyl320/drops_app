@@ -2,6 +2,7 @@ import SwiftUI
 
 // Startansicht mit App-Branding und Navigation zum Zähler (CounterPageView)
 struct ContentView: View {
+
     // Local wrappers to avoid ambiguous type names elsewhere in the project
     private struct SettingsScreen: View {
         var body: some View {
@@ -65,13 +66,14 @@ struct ContentView: View {
                         // Optik: Wasserwellen-Overlay und glänzende Kontur
                         .overlay(
                             ZStack {
-                                // Subtle water waves overlay
+                            
                                 Image(systemName: "water.waves")
                                     .font(.system(size: 64))
                                     .foregroundColor(.white.opacity(0.10))
                                     .rotationEffect(.degrees(8))
                                     .offset(x: 8, y: -8)
                                     .allowsHitTesting(false)
+
                                 // Glossy stroke
                                 Capsule().strokeBorder(
                                     LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],

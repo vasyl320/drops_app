@@ -341,7 +341,7 @@ struct CalendarView: View {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = Locale.current
-        formatter.dateFormat = "LLLL" // Full month name
+        formatter.dateFormat = "LLLL" // Ganzer Monatsname
         return formatter.string(from: startOfMonth(for: date)).capitalized
     }
 
@@ -444,7 +444,7 @@ struct CalendarView: View {
         return formatter.string(from: date)
     }
     
-    // Wrapper for current streak count from streakManager
+    // Wrapper für aktuellen StreakManager
     private func currentStreakCount() -> Int {
         streakManager.currentStreakCount(referenceDate: lastDay)
     }
