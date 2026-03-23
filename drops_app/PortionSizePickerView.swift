@@ -28,9 +28,6 @@ struct PortionSizePickerView: View {
         VStack(spacing: 24) {
             // iOS-Wheel-Picker für Portionsgröße – zentriert und vergrößert
             HStack(spacing: 8) {
-                Image(systemName: "water.waves")
-                    .imageScale(.large)
-                    .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                 Text("Portionsgröße")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))

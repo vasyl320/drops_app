@@ -22,10 +22,6 @@ struct ReminderSettingsView: View {
         VStack(spacing: 24) {
 
             HStack(spacing: 8) {
-                Image(systemName: "water.waves")
-                    .imageScale(.large)
-                    .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-
                 Text("Erinnerungen")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -72,14 +68,6 @@ struct ReminderSettingsView: View {
                             )
                     )
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-                    .overlay(
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 76))
-                            .foregroundColor(.blue.opacity(0.06))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 8, y: -8)
-                            .allowsHitTesting(false)
-                    )
             )
 
             // Bereich: Uhrzeit wählen (Wheel-DatePicker)
@@ -108,14 +96,6 @@ struct ReminderSettingsView: View {
                             )
                     )
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-                    .overlay(
-                        Image(systemName: "water.waves")
-                            .font(.system(size: 76))
-                            .foregroundColor(.blue.opacity(0.06))
-                            .rotationEffect(.degrees(8))
-                            .offset(x: 8, y: -8)
-                            .allowsHitTesting(false)
-                    )
             )
 
             Spacer()

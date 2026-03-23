@@ -16,9 +16,7 @@ struct GlassCountPickerView: View {
             // iOS-Wheel-Picker für Anzahl der Gläser – zentriert und vergrößert
             Spacer()
             HStack(spacing: 8) {
-                Image(systemName: "water.waves")
-                    .imageScale(.large)
-                    .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                
                 Text("Anzahl")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))

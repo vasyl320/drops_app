@@ -12,6 +12,8 @@ struct CalendarView: View {
     // Vom Nutzer ausgewähltes Datum
     @State private var selectedDate: Date? = nil
     private let calendar = Calendar.current
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var lastDay: Date = Date()
 
     var body: some View {
         VStack(spacing: 16) {
@@ -81,6 +83,16 @@ struct CalendarView: View {
         .padding(20)
         .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.08), Color.blue.opacity(0.02)]), startPoint: .top, endPoint: .bottom))
         .navigationBarTitleDisplayMode(.inline)
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            lastDay = Date()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                if !calendar.isDate(lastDay, inSameDayAs: Date()) {
+                    lastDay = Date()
+                }
+            }
+        }
     }
 
     // Kopfbereich mit Monatsnavigation
@@ -329,7 +341,7 @@ struct CalendarView: View {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = Locale.current
-        formatter.dateFormat = "LLLL" // Full month name
+        formatter.dateFormat = "LLLL" // Ganzer Monatsname
         return formatter.string(from: startOfMonth(for: date)).capitalized
     }
 
@@ -340,6 +352,28 @@ struct CalendarView: View {
         formatter.locale = Locale.current
         formatter.dateFormat = "yyyy"
         return formatter.string(from: startOfMonth(for: date))
+    }
+    
+    // Hilfsfunktion: Wochentitel (z. B. "29. Jan – 4. Feb 2026")
+    private func weekTitle(for date: Date) -> String {
+        guard let interval = calendar.dateInterval(of: .weekOfYear, for: date) else { return "" }
+        let start = interval.start
+        let end = calendar.date(byAdding: .day, value: 6, to: start) ?? start
+
+        let dayMonthFormatter = DateFormatter()
+        dayMonthFormatter.calendar = calendar
+        dayMonthFormatter.locale = Locale.current
+        dayMonthFormatter.dateFormat = "d. MMM"
+
+        let yearFormatter = DateFormatter()
+        yearFormatter.calendar = calendar
+        yearFormatter.locale = Locale.current
+        yearFormatter.dateFormat = "yyyy"
+
+        let startStr = dayMonthFormatter.string(from: start)
+        let endStr = dayMonthFormatter.string(from: end)
+        let yearStr = yearFormatter.string(from: end)
+        return "\(startStr) – \(endStr) \(yearStr)"
     }
 
     // Hilfsfunktion: Kurze Wochentagssymbole
@@ -410,9 +444,9 @@ struct CalendarView: View {
         return formatter.string(from: date)
     }
     
-    // Wrapper for current streak count from streakManager
+    // Wrapper für aktuellen StreakManager
     private func currentStreakCount() -> Int {
-        streakManager.currentStreakCount(referenceDate: Date())
+        streakManager.currentStreakCount(referenceDate: lastDay)
     }
 }
 

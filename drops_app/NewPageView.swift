@@ -50,9 +50,6 @@ struct CounterPageView: View {
                         Text("\(zaehler)/\(maxGlasses)")
                             .font(.system(size: 72, weight: .black, design: .rounded))
                             .monospacedDigit()
-                        Image(systemName: "cup.and.saucer.fill")
-                            .font(.system(size: 34, weight: .bold))
-                            .accessibilityHidden(true)
                     }
                     .foregroundStyle(
                         LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
@@ -76,7 +73,7 @@ struct CounterPageView: View {
                             )
                             .opacity(0.9)
                     )
-                    // Subtle water waves overlay for flair
+                    // Subtiles Wasserwellen-Overlay als Akzent
                     Image(systemName: "water.waves")
                         .font(.system(size: 90, weight: .regular))
                         .foregroundColor(.blue.opacity(0.06))
@@ -92,7 +89,7 @@ struct CounterPageView: View {
                 ZStack {
                     // Voll – Ziel erreicht: zeige runden Navigations-Button zum Kalender
                     if zaehler == maxGlasses {
-                        // Blue fire badge in sea style when full
+                        // Blaue Flammen-Plakette im Meeresstil bei voller Füllung
                         NavigationLink {
                             CalendarView()
                         } label: {
@@ -153,7 +150,7 @@ struct CounterPageView: View {
                         }
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .offset(y: -300)
+                        .offset(y: -280)
                         .zIndex(2)
                         .transition(.scale.combined(with: .opacity))
                         .scaleEffect(flamePulse ? 1.06 : 1.0)
@@ -212,7 +209,7 @@ struct CounterPageView: View {
                                 .accessibilityLabel("Zurück")
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .offset(y: -200)
+                        .offset(y: 200)
                         .zIndex(1)
                         .transition(.opacity.combined(with: .move(edge: .leading)))
                     }
@@ -226,6 +223,7 @@ struct CounterPageView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         .contentShape(Rectangle())
                         .zIndex(0)
+                        .offset(y: -60)
                         .onTapGesture {
                             // Inkrementiere Zähler, solange Ziel nicht erreicht
                             if zaehler < maxGlasses {
@@ -235,19 +233,19 @@ struct CounterPageView: View {
                                     zaehler += 1
                                     lastCountDate = todayKey()
                                 }
-                                // If we just reached the goal, persist completion and notify observers
+                                // Wenn wir gerade das Ziel erreicht haben, Abschluss speichern und Beobachter benachrichtigen
                                 if zaehler == maxGlasses {
                                     StreakManager.shared.markTodayCompleted()
                                 }
                             }
                         }
                 }
-                .padding(.bottom, 80)
+                .padding(.bottom, 140)
                 .animation(.easeInOut(duration: 0.22), value: zaehler)
             }
 
             HStack(spacing: 20) {
-                // Bottom-left: Calendar
+                // Unten links: Kalender
                 NavigationLink {
                     CalendarView()
                 } label: {
@@ -284,7 +282,7 @@ struct CounterPageView: View {
                         .accessibilityLabel("Kalender")
                 }
 
-                // Bottom-right: Settings
+                // Unten rechts: Einstellungen
                 NavigationLink {
                     SettingsView()
                 } label: {
@@ -331,7 +329,7 @@ struct CounterPageView: View {
                 zaehler = 0
                 lastCountDate = today
             }
-            // Clamp current count to current goal when appearing
+            // Beim Erscheinen aktuellen Stand auf aktuelles Ziel begrenzen
             let currentGoal = max(1, targetGlasses)
             if zaehler > currentGoal {
                 zaehler = currentGoal
@@ -346,7 +344,7 @@ struct CounterPageView: View {
             lastCountDate = todayKey()
         }
         .padding()
-        // Zahnrad in der Toolbar entfernt as per instructions
+        // Zahnrad in der Toolbar gemäß Anweisung entfernt
         .navigationBarBackButtonHidden(true)
     }
 }
@@ -354,4 +352,3 @@ struct CounterPageView: View {
 #Preview {
     CounterPageView()
 }
-
