@@ -14,7 +14,7 @@ final class StreakManager: ObservableObject {
     // Konstante Werte über AppStorage-ähnlichen UserDefaults-Zugriff (außerhalb von Views nutzbar)
     private var defaults: UserDefaults { .standard }
 
-    // MARK: - Persistenz-Wrapper
+    // MARK: - Konstanz-Wrapper
     private var markedBlueDates: Set<String> {
         get {
             guard let string = defaults.string(forKey: markedBlueDatesKey),
