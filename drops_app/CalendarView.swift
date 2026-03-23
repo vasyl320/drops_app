@@ -2,92 +2,16 @@
 // - Markiert abgeschlossene Tage blau
 // - Zeigt eine Flammen-Badge für den heutigen Abschluss
 import SwiftUI
+import Foundation
 
 struct CalendarView: View {
+    @StateObject private var streakManager = StreakManager.shared
+
     // Aktuell angezeigter Monat im Kalender
     @State private var displayedMonth: Date = Date()
     // Vom Nutzer ausgewähltes Datum
     @State private var selectedDate: Date? = nil
     private let calendar = Calendar.current
-    
-    // Speichert, ob der heutige Tag abgeschlossen ist (für die Flammenanzeige)
-    @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
-
-    // Persistente Menge markierter Tage (als JSON-Array gespeichert)
-    @AppStorage("markedBlueDates") private var markedBlueDatesStorage: String = "[]" // JSON array of strings (yyyy-MM-dd)
-
-    private var markedBlueDates: Set<String> {
-        get {
-            if let data = markedBlueDatesStorage.data(using: .utf8),
-               let array = try? JSONDecoder().decode([String].self, from: data) {
-                return Set(array)
-            }
-            return []
-        }
-        nonmutating set {
-            let array = Array(newValue)
-            if let data = try? JSONEncoder().encode(array),
-               let string = String(data: data, encoding: .utf8) {
-                markedBlueDatesStorage = string
-            }
-        }
-    }
-
-    // Markiert den heutigen Tag als abgeschlossen (setzt Flamme und blauen Marker)
-    func markTodayAsCompleted() {
-        // Set today's flame date so the flame shows "1" and persist the mark
-        let today = Date()
-        let key = dateKey(today)
-
-        // Update the flame date storage for today
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = Locale.current
-        formatter.timeZone = calendar.timeZone
-        formatter.dateFormat = "yyyy-MM-dd"
-        todayFlameDate = formatter.string(from: today)
-
-        // Persist the blue mark for today
-        var set = markedBlueDates
-        set.insert(key)
-        markedBlueDates = set
-    }
-
-    // Öffentliche Helferfunktion: bei Zielerreichung aufrufen
-    func userReachedTenOutOfTenToday() {
-        // Debounce: if already marked for today, do nothing
-        if isTodayMarkedComplete() { return }
-        markTodayAsCompleted()
-    }
-
-    // Setzt nur die heutige Flammenanzeige zurück; markierte Tage bleiben dauerhaft erhalten
-    func resetAllProgressDueToMissedDay() {
-        // Clear the flame indicator (so the badge shows 0)
-        todayFlameDate = ""
-    }
-
-    // Reagiert auf Tageswechsel und setzt ggf. Fortschritt zurück
-    func handleDayRollover(previousDayCompleted: Bool) {
-        // If the previous day was not completed, reset everything
-        if !previousDayCompleted {
-            resetAllProgressDueToMissedDay()
-        }
-    }
-
-    // Prüft, ob ein Datum als abgeschlossen markiert ist
-    private func isMarkedBlue(_ date: Date) -> Bool {
-        markedBlueDates.contains(dateKey(date))
-    }
-
-    // Liefert einen stabilen Schlüssel (yyyy-MM-dd) für ein Datum
-    private func dateKey(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = Locale.current
-        formatter.timeZone = calendar.timeZone
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
-    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -283,7 +207,7 @@ struct CalendarView: View {
         let isToday = self.isToday(date)
 
         let isSelected = (selectedDate == date)
-        let isMarked = isMarkedBlue(date)
+        let isMarked = streakManager.isDateCompleted(date)
 
         let base = ZStack {
             DayBackground(inMonth: inMonth, isSelected: isSelected)
@@ -295,7 +219,7 @@ struct CalendarView: View {
                 .offset(x: 6, y: -6)
                 .allowsHitTesting(false)
 
-            if isMarked || (isToday && isTodayMarkedComplete()) {
+            if isMarked || (isToday && streakManager.isTodayMarkedComplete()) {
                 // Completed: show centered flame only (no background)
                 Image(systemName: "flame.fill")
                     .font(.system(size: 22, weight: .bold))
@@ -486,32 +410,9 @@ struct CalendarView: View {
         return formatter.string(from: date)
     }
     
-    // Hilfsfunktion: Ist der heutige Tag abgeschlossen?
-    private func isTodayMarkedComplete() -> Bool {
-        guard !todayFlameDate.isEmpty else { return false }
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = Locale.current
-        formatter.dateFormat = "yyyy-MM-dd"
-        let todayString = formatter.string(from: Date())
-        return todayFlameDate == todayString
-    }
-    
-    // Hilfsfunktion: Aktuelle Streak-Länge (aufeinanderfolgende abgeschlossene Tage bis heute)
+    // Wrapper for current streak count from streakManager
     private func currentStreakCount() -> Int {
-        var count = 0
-        var cursor = Date()
-        while true {
-            let key = dateKey(cursor)
-            if markedBlueDates.contains(key) {
-                count += 1
-                guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
-                cursor = prev
-            } else {
-                break
-            }
-        }
-        return count
+        streakManager.currentStreakCount(referenceDate: Date())
     }
 }
 

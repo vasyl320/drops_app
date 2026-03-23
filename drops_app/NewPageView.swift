@@ -15,8 +15,6 @@ struct CounterPageView: View {
     // Animations-Flags für die Flammen-/Glüh-Effekte
     @State private var flamePulse: Bool = false
     @State private var glowPulse: Bool = false
-    // Speichert, ob der heutige Tag als "erreicht" markiert ist (Kalender-Flamme)
-    @AppStorage("todayFlameDate") private var todayFlameDate: String = ""
     // Zielanzahl Gläser (aus Einstellungen)
     @AppStorage("glassCount") private var targetGlasses: Int = 10
     // Bildstufen für die Gläser-Füllung (0–10)
@@ -237,13 +235,9 @@ struct CounterPageView: View {
                                     zaehler += 1
                                     lastCountDate = todayKey()
                                 }
-                                // If we just reached 10, mark today for the calendar flame
+                                // If we just reached the goal, persist completion and notify observers
                                 if zaehler == maxGlasses {
-                                    let formatter = DateFormatter()
-                                    formatter.calendar = Calendar.current
-                                    formatter.locale = Locale.current
-                                    formatter.dateFormat = "yyyy-MM-dd"
-                                    todayFlameDate = formatter.string(from: Date())
+                                    StreakManager.shared.markTodayCompleted()
                                 }
                             }
                         }
