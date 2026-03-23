@@ -147,7 +147,7 @@ struct ReminderSettingsView: View {
         }
     }
 
-    // Synchronisiert die lokale Date-Auswahl aus den persistierten Stunden/Minuten
+    // Synchronisiert die lokale Date-Auswahl aus den konstanten Stunden/Minuten
     private func syncDateFromStorage() {
         let comps = DateComponents(hour: reminderHour, minute: reminderMinute)
         let date = Calendar.current.date(from: comps) ?? Date()

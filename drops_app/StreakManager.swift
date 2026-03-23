@@ -11,7 +11,7 @@ final class StreakManager: ObservableObject {
     private let markedBlueDatesKey = "markedBlueDates" // JSON-Array von Strings (yyyy-MM-dd)
     private let todayFlameDateKey = "todayFlameDate"
 
-    // Persistierte Werte über AppStorage-ähnlichen UserDefaults-Zugriff (außerhalb von Views nutzbar)
+    // Konstante Werte über AppStorage-ähnlichen UserDefaults-Zugriff (außerhalb von Views nutzbar)
     private var defaults: UserDefaults { .standard }
 
     // MARK: - Persistenz-Wrapper
