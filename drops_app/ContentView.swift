@@ -53,7 +53,7 @@ struct ContentView: View {
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 56)
-                        // Optik: Verlaufshintergrund im Kapsel-Stil
+                        // Optik: VerlaufshintergrJJJJund im Kapsel-Stil
                         .background(
                             Capsule()
                                 .fill(
