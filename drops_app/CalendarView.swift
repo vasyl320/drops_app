@@ -208,6 +208,13 @@ struct CalendarView: View {
         let base = ZStack {
             DayBackground(inMonth: inMonth, isSelected: isSelected)
 
+            Image(systemName: "water.waves")
+                .font(.system(size: 42, weight: .regular))
+                .foregroundColor(.white.opacity(inMonth ? 0.06 : 0.0))
+                .rotationEffect(.degrees(8))
+                .offset(x: 6, y: -6)
+                .allowsHitTesting(false)
+
             if isMarked || (isToday && streakManager.isTodayMarkedComplete()) {
                 // Abgeschlossen: nur zentrierte Flamme anzeigen (kein Hintergrund)
                 Image(systemName: "flame.fill")
