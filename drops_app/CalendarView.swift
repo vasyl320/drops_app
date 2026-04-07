@@ -30,42 +30,27 @@ struct CalendarView: View {
             ZStack {
                 // Minimale, klare Flamme ohne Hintergrundfüllung
                 ZStack {
-                    // Feiner Ring (kein ausgefüllter Hintergrund)
-                    Circle()
-                        .stroke(
-                            LinearGradient(colors: [Color.cyan.opacity(0.6), Color.blue.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 2
-                        )
-                        .shadow(color: Color.cyan.opacity(0.25), radius: 6, x: 0, y: 2)
-
-                    // Sanfter Leuchteffekt (sehr dezent)
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                gradient: Gradient(colors: [
-                                    Color.cyan.opacity(0.20),
-                                    Color.clear
-                                ]),
-                                center: .center,
-                                startRadius: 1,
-                                endRadius: 120
+                    // Flammen‑Symbol und Zahl untereinander
+                    VStack(spacing: -4) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 110, weight: .bold))
+                            .foregroundStyle(
+                                LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
                             )
-                        )
-                        .blendMode(.plusLighter)
+                            .saturation(1.0)
+                            .brightness(0.08)
+                            .shadow(color: Color.cyan.opacity(0.55), radius: 8, x: 0, y: 2)
+                            .shadow(color: Color.white.opacity(0.25), radius: 6, x: 0, y: 0)
+                            .opacity(1.0)
 
-                    // Flammen‑Symbol
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 100, weight: .bold))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
-                        )
-                        .shadow(color: Color.cyan.opacity(0.5), radius: 6, x: 0, y: 2)
-                        .opacity(0.95)
-
-                    Text("\(currentStreakCount())")
-                        .font(.system(size: 52, weight: .black, design: .rounded))
-                        .foregroundStyle(Color.white)
-                        .shadow(color: Color.blue.opacity(0.35), radius: 5, x: 0, y: 2)
+                        Text("\(currentStreakCount())")
+                            .font(.system(size: 72, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: Color.cyan.opacity(0.45), radius: 8, x: 0, y: 0)
+                            .shadow(color: Color.blue.opacity(0.35), radius: 6, x: 0, y: 0)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .offset(y: -4)
                 }
             }
             .frame(width: 180, height: 180)
@@ -303,6 +288,7 @@ struct CalendarView: View {
             EmptyView()
         }
     }
+    
 
     // Hilfsfunktion: Monat wechseln
     private func changeMonth(by offset: Int) {
