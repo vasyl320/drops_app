@@ -54,26 +54,17 @@ struct ContentView: View {
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 56)
-                        // Optik: Verlaufshintergrund im Kapsel-Stil
+                        // Optik: Kapsel mit einfarbigem blauen Hintergrund
                         .background(
                             Capsule()
-                                .fill(
-                                    LinearGradient(colors: [Color.blue, Color.cyan, Color.teal],
-                                                   startPoint: .topLeading,
-                                                   endPoint: .bottomTrailing)
-                                )
+                                .fill(Color.blue)
                         )
-                        // Optik: Wasserwellen-Overlay und glänzende Kontur
+                        // Optik: Wasserwellen-Overlay und glänzende Kontur mit einfarbiger Linie
                         .overlay(
                             ZStack {
                             
                                 // Glänzender Rand
-                                Capsule().strokeBorder(
-                                    LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
-                                                   startPoint: .topLeading,
-                                                   endPoint: .bottomTrailing),
-                                    lineWidth: 1.5
-                                )
+                                Capsule().strokeBorder(Color.white.opacity(0.25), lineWidth: 1.5)
                             }
                         )
                         // Weicher Schatten für Tiefe
