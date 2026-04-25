@@ -22,7 +22,7 @@ enum NotificationManager {
         // Hauptbenachrichtigung
         let content = UNMutableNotificationContent()
         content.title = "Zeit zum Trinken"
-        content.body = "Bleib hydratisiert und trinke ein Glas Wasser."
+        content.body = "Stay Hydrated !"
         content.sound = .default
 
         var components = DateComponents()
