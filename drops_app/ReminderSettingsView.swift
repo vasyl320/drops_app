@@ -1,26 +1,44 @@
-// ReminderSettingsView: Einstellungen für tägliche Erinnerungen
-// - Aktivieren/Deaktivieren, interaktive Erinnerungen, Uhrzeitwahl
-// - Optisch abgestimmt auf die App (blauer Stil, Wasserwellen)
 import SwiftUI
 
+/*
+ ReminderSettingsView – Einstellungen für tägliche Erinnerungen
+ --------------------------------------------------------------
+ Zweck
+ - Nutzer kann tägliche Erinnerungen aktivieren und konfigurieren.
+ - Unterstützt zwei Modi: feste Erinnerung (Zeitpunkt) und interaktive Erinnerung.
+ - Planung/Kündigung von Benachrichtigungen erfolgt über NotificationManager.
+
+ Daten & Zustände
+ - reminderEnabled: fester Alarm an/aus
+ - reminderInteractive: interaktiver Hinweis an/aus (schließt festen Alarm aus)
+ - reminderHour/minute: gewählte Uhrzeit
+ - reminderDate: lokale Date‑Repräsentation für den Wheel‑DatePicker
+
+ Interaktion
+ - Gegenseitiger Ausschluss der Modi (wenn einer aktiv, wird der andere deaktiviert).
+ - Bei Änderungen: Werte speichern und ggf. Erinnerungen neu planen.
+
+ Gestaltung & Barrierefreiheit
+ - Überschrift, zwei Schalter in einer Material‑Karte, darunter ein Wheel‑DatePicker.
+ - Farbverläufe im App‑Stil, klare Labels, Accessibility‑Labels.
+*/
 struct ReminderSettingsView: View {
+    // MARK: - Umgebung & Persistenz
     @Environment(\.dismiss) private var dismiss
 
-    // Hauptschalter: Erinnerungen an/aus (persistiert)
     @AppStorage("reminderEnabled") private var reminderEnabled: Bool = false
-    // Zusätzlicher sanfter Hinweis (zweite Benachrichtigung)
     @AppStorage("reminderInteractive") private var reminderInteractive: Bool = false
-    // Gewählte Stunde der Erinnerung
     @AppStorage("reminderHour") private var reminderHour: Int = 9
-    // Gewählte Minute der Erinnerung
     @AppStorage("reminderMinute") private var reminderMinute: Int = 0
 
-    // Lokale Datumskomponente für den Wheel-DatePicker (aus Stunde/Minute)
+    // MARK: - Lokaler Zustand
+    /// Lokale Datumskomponente, die die ausgewählte Uhrzeit im Wheel‑Picker repräsentiert.
     @State private var reminderDate: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
 
+    // MARK: - Layout
     var body: some View {
         VStack(spacing: 24) {
-
+            // Titel im App‑Stil
             HStack(spacing: 8) {
                 Text("Erinnerungen")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
@@ -70,7 +88,7 @@ struct ReminderSettingsView: View {
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
             )
 
-            // Bereich: Uhrzeit wählen (Wheel-DatePicker)
+            // Bereich: Uhrzeit wählen (Wheel‑DatePicker)
             VStack(alignment: .leading, spacing: 12) {
                 Text("Uhrzeit")
                     .font(.headline)
@@ -104,7 +122,6 @@ struct ReminderSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .tint(.teal)
-
         // Toolbar mit Zurück- und Sichern-Aktionen
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -126,35 +143,31 @@ struct ReminderSettingsView: View {
                 .disabled(!reminderEnabled)
             }
         }
-
         // Beim Öffnen: Uhrzeit aus gespeicherten Werten laden
         .onAppear { syncDateFromStorage() }
-
-        // Wenn Ein-/Ausschalten geändert wird: sofort speichern/planen und gegenseitige Sperre beachten
+        // Live‑Reaktionen auf Umschalten/Änderungen
         .onChange(of: reminderEnabled) { _, newValue in
-            // Live-Aktualisierung beim Umschalten
             if newValue { reminderInteractive = false }
             saveAndSchedule()
         }
-        // Wenn Interaktivität geändert wird: gegenseitige Sperre beachten und speichern/planen
         .onChange(of: reminderInteractive) { _, newValue in
             if newValue { reminderEnabled = false }
             saveAndSchedule()
         }
-        // Wenn Uhrzeit geändert wird: bei aktivierten Erinnerungen neu planen
-        .onChange(of: reminderDate) { _, newValue in
+        .onChange(of: reminderDate) { _, _ in
             if reminderEnabled { saveAndSchedule() }
         }
     }
 
-    // Synchronisiert die lokale Date-Auswahl aus den konstanten Stunden/Minuten
+    // MARK: - Logik: Synchronisieren & Planen
+    /// Synchronisiert die lokale Date‑Auswahl aus den persistierten Stunden/Minuten.
     private func syncDateFromStorage() {
         let comps = DateComponents(hour: reminderHour, minute: reminderMinute)
         let date = Calendar.current.date(from: comps) ?? Date()
         reminderDate = date
     }
 
-    // Speichert die aktuellen Werte und plant/entfernt Benachrichtigungen
+    /// Speichert die aktuellen Werte und plant/entfernt Benachrichtigungen über den NotificationManager.
     private func saveAndSchedule() {
         let comps = Calendar.current.dateComponents([.hour, .minute], from: reminderDate)
         reminderHour = comps.hour ?? 9
@@ -177,60 +190,7 @@ struct ReminderSettingsView: View {
     }
 }
 
-// MARK: - WaveView für Ozean-Stil
-struct WaveView: Shape {
-    var amplitude: CGFloat
-    var frequency: CGFloat
-    var phase: CGFloat = 0
-    var phaseSpeed: CGFloat = 1
-
-    var animatableData: CGFloat {
-        get { phase }
-        set { phase = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let midY = rect.midY
-        let width = rect.width
-        let step = max(1, width / 120)
-
-        path.move(to: CGPoint(x: 0, y: midY))
-        var x: CGFloat = 0
-        while x <= width {
-            let relativeX = x / rect.width
-            let y = midY + sin((relativeX * .pi * 2 * frequency) + phase) * amplitude
-            path.addLine(to: CGPoint(x: x, y: y))
-            x += step
-        }
-        // Form nach unten schließen
-        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
-        path.addLine(to: CGPoint(x: 0, y: rect.height))
-        path.closeSubpath()
-        return path
-    }
-}
-
-extension View {
-    func animatedWave(phaseSpeed: CGFloat) -> some View {
-        self.modifier(WaveAnimationModifier(phaseSpeed: phaseSpeed))
-    }
-}
-
-private struct WaveAnimationModifier: ViewModifier {
-    @State private var phase: CGFloat = 0
-    var phaseSpeed: CGFloat
-
-    func body(content: Content) -> some View {
-        content
-            .onAppear {
-                withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
-                    phase = .pi * 2 * phaseSpeed
-                }
-            }
-    }
-}
-
+// MARK: - Vorschau
 #Preview {
     NavigationStack {
         ReminderSettingsView()

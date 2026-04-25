@@ -1,8 +1,19 @@
-// Benachrichtigungsverwaltung für tägliche Erinnerungen
 import Foundation
 import UserNotifications
 
+/*
+ NotificationManager – Verwaltung lokaler Benachrichtigungen
+ -----------------------------------------------------------
+ Zweck
+ - Kapselt die Anfragen an UNUserNotificationCenter für tägliche Erinnerungen.
+ - Bietet Hilfsfunktionen zum Anfordern von Berechtigungen, Planen und Abbrechen.
+
+ Verhalten
+ - scheduleDailyReminder: entfernt alte Requests, plant die Hauptbenachrichtigung und optional eine zweite (Nudge) nach +2 Stunden.
+ - cancelDailyReminders: entfernt ausstehende Requests für unsere Bezeichner.
+*/
 enum NotificationManager {
+    /// Fordert die Benachrichtigungsberechtigung an und liefert das Ergebnis im Hauptthread zurück.
     static func requestAuthorization(completion: ((Bool) -> Void)? = nil) {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
@@ -12,13 +23,14 @@ enum NotificationManager {
         }
     }
 
+    /// Plant die tägliche Erinnerung um (hour:minute). Optional wird ein zusätzlicher sanfter Hinweis nach +2 Stunden geplant.
     static func scheduleDailyReminder(hour: Int, minute: Int, interactive: Bool) {
         let center = UNUserNotificationCenter.current()
 
-        // Entferne vorherige ausstehende Anfragen für unsere Bezeichner
+        // Zuerst alte Requests entfernen, damit wir keine Duplikate erzeugen.
         center.removePendingNotificationRequests(withIdentifiers: ["dailyReminder", "dailyReminderNudge"]) 
 
-        // Haupttägliche Erinnerung
+        // Hauptbenachrichtigung
         let content = UNMutableNotificationContent()
         content.title = "Zeit zum Trinken"
         content.body = "Bleib hydratisiert und trinke ein Glas Wasser."
@@ -32,7 +44,7 @@ enum NotificationManager {
         let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
         center.add(request)
 
-        // Optionale zweite sanfte Erinnerung, wenn der interaktive Modus aktiviert ist
+        // Optionale zweite Benachrichtigung (sanfter Nudge)
         if interactive {
             let nudgeContent = UNMutableNotificationContent()
             nudgeContent.title = "Sanfte Erinnerung"
@@ -50,8 +62,8 @@ enum NotificationManager {
         }
     }
 
+    /// Hebt alle geplanten täglichen Erinnerungen auf (Haupt- und Nudge‑Benachrichtigung).
     static func cancelDailyReminders() {
-        // Ausstehende Anfragen für unsere Bezeichner entfernen
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ["dailyReminder", "dailyReminderNudge"]) 
     }

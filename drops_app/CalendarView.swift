@@ -1,23 +1,56 @@
-// CalendarView: Monatsübersicht mit Streak-/Erfolgsmarkierungen
-// - Markiert abgeschlossene Tage blau
-// - Zeigt eine Flammen-Badge für den heutigen Abschluss
 import SwiftUI
 import Foundation
 
+/*
+ CalendarView – Monatsübersicht mit Streak-/Erfolgsmarkierungen
+ --------------------------------------------------------------
+ Zweck
+ - Zeigt einen Monatskalender, in dem abgeschlossene Tage (Ziel erreicht) markiert werden.
+ - Visualisiert den aktuellen Streak (aufeinanderfolgende abgeschlossene Tage) mit einem zentralen Flammen‑Badge.
+
+ Daten & Zustände
+ - Verwendet einen geteilten StreakManager (Singleton) als @StateObject, um Markierungen reaktiv zu beobachten.
+ - Hält den aktuell angezeigten Monat (displayedMonth) und eine optionale Datumsauswahl (selectedDate).
+ - Nutzt das aktuelle Calendar‑Objekt für Berechnungen (Monatsraster, Wochentage, usw.).
+ - Beobachtet die scenePhase, um bei Rückkehr in die App Datumswechsel robust zu behandeln.
+ - Speichert lastDay für die Streak‑Berechnung am jeweiligen Tag.
+
+ Interaktion
+ - Pfeil‑Buttons im Kopf wechseln den Monat.
+ - Ein Tipp auf ein Tagesfeld wählt dieses aus (nur UI‑Markierung, kein Seiteneffekt).
+ - Wenn der Nutzer in der Zähleransicht das Tagesziel erreicht, markiert StreakManager den Tag. Diese Markierung
+   wird hier gelesen und als Flamme im Tagesfeld angezeigt.
+
+ Gestaltung & Barrierefreiheit
+ - „Meer‑Stil“: Blau/Cyan/Teal‑Verläufe, weiche Schatten.
+ - Klare Typografie, große Touch‑Ziele, semantische Labels für VoiceOver.
+ - Heute und Auswahlzustände werden visuell hervorgehoben (Rahmen/Schattierung).
+*/
 struct CalendarView: View {
+    // MARK: - Zustände & Umgebungen
+
+    /// Reaktives Modell, das die abgeschlossenen Tage und den Streak verwaltet.
     @StateObject private var streakManager = StreakManager.shared
 
-    // Aktuell angezeigter Monat im Kalender
+    /// Der aktuell im Kalender angezeigte Monat (Startwert: heute).
     @State private var displayedMonth: Date = Date()
-    // Vom Nutzer ausgewähltes Datum
+
+    /// Das vom Nutzer aktuell ausgewählte Datum (nur UI‑Auswahl, optional).
     @State private var selectedDate: Date? = nil
+
+    /// Kalenderinstanz für Datumsberechnungen (Wochentage, Monatsraster, etc.).
     private let calendar = Calendar.current
+
+    /// Scene‑Phase (active/inactive/background), um auf App‑Statuswechsel zu reagieren.
     @Environment(\.scenePhase) private var scenePhase
+
+    /// Letzter bekannter Tag (für Streak‑Auswertungen und Tageswechsel‑Erkennung).
     @State private var lastDay: Date = Date()
 
+    // MARK: - Layout
     var body: some View {
         VStack(spacing: 16) {
-            // Titel über dem Kalender
+            // Titelzeile über dem Kalender mit markanter, blauer Gestaltung
             Text("Streak-Kalender")
                 .font(.system(size: 44, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.blue)
@@ -25,39 +58,35 @@ struct CalendarView: View {
                 .shadow(color: Color.blue.opacity(0.08), radius: 6, x: 0, y: 2)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 4)
-            
-            // Großes zentriertes Flammen‑Badge
-            ZStack {
-                // Minimale, klare Flamme ohne Hintergrundfüllung
-                ZStack {
-                    // Flammen‑Symbol und Zahl untereinander
-                    VStack(spacing: -4) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 110, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
-                            )
-                            .saturation(1.0)
-                            .brightness(0.08)
-                            .shadow(color: Color.cyan.opacity(0.55), radius: 8, x: 0, y: 2)
-                            .shadow(color: Color.white.opacity(0.25), radius: 6, x: 0, y: 0)
-                            .opacity(1.0)
 
-                        Text("\(currentStreakCount())")
-                            .font(.system(size: 72, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
-                            .shadow(color: Color.cyan.opacity(0.45), radius: 8, x: 0, y: 0)
-                            .shadow(color: Color.blue.opacity(0.35), radius: 6, x: 0, y: 0)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .offset(y: -4)
+            // Großes, zentriertes Flammen‑Badge, das den aktuellen Streak visualisiert
+            ZStack {
+                VStack(spacing: -4) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 110, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .top, endPoint: .bottom)
+                        )
+                        .saturation(1.0)
+                        .brightness(0.08)
+                        .shadow(color: Color.cyan.opacity(0.55), radius: 8, x: 0, y: 2)
+                        .shadow(color: Color.white.opacity(0.25), radius: 6, x: 0, y: 0)
+                        .opacity(1.0)
+
+                    Text("\(currentStreakCount())")
+                        .font(.system(size: 72, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: Color.cyan.opacity(0.45), radius: 8, x: 0, y: 0)
+                        .shadow(color: Color.blue.opacity(0.35), radius: 6, x: 0, y: 0)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .offset(y: -4)
             }
             .frame(width: 180, height: 180)
             .padding(.bottom, 8)
             .accessibilityHidden(true)
 
-            // Kalender-Stack
+            // Kalendercontainer: Kopfzeile, Wochentagszeile, Monatsraster
             VStack(spacing: 20) {
                 header
                 weekdayHeader
@@ -66,11 +95,17 @@ struct CalendarView: View {
             .frame(maxHeight: .infinity, alignment: .bottom)
         }
         .padding(20)
-        .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.08), Color.blue.opacity(0.02)]), startPoint: .top, endPoint: .bottom))
+        .background(
+            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.08), Color.blue.opacity(0.02)]),
+                           startPoint: .top,
+                           endPoint: .bottom)
+        )
         .navigationBarTitleDisplayMode(.inline)
+        // Tageswechsel aus dem System beobachten und den Referenztag aktualisieren
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             lastDay = Date()
         }
+        // Bei Rückkehr in die aktive Phase prüfen, ob ein Tag vergangen ist (z. B. App war im Hintergrund)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 if !calendar.isDate(lastDay, inSameDayAs: Date()) {
@@ -80,7 +115,8 @@ struct CalendarView: View {
         }
     }
 
-    // Kopfbereich mit Monatsnavigation
+    // MARK: - Kopfzeile (Monatsnavigation)
+    /// Kopfbereich mit Navigation zum vorherigen/nächsten Monat und Monats-/Jahresanzeige.
     private var header: some View {
         HStack(spacing: 12) {
             Button(action: { changeMonth(by: -1) }) {
@@ -148,7 +184,8 @@ struct CalendarView: View {
         }
     }
 
-    // Wochentags-Kopfzeile (Mo–So)
+    // MARK: - Wochentagskopf (Mo–So)
+    /// Zeigt die Kurzbezeichnungen der Wochentage in einer einheitlich gestalteten Kopfzeile.
     private var weekdayHeader: some View {
         let symbols = weekdaySymbolsShort()
         return HStack(spacing: 0) {
@@ -171,7 +208,8 @@ struct CalendarView: View {
         .padding(.top, 4)
     }
 
-    // Monatsraster mit Tagen
+    // MARK: - Monatsraster
+    /// Ein 7‑spaltiges Raster, das alle Tage des angezeigten Monats (inkl. Vor-/Nachlauf) anzeigt.
     private var monthGrid: some View {
         let days = daysForMonth()
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 7), spacing: 14) {
@@ -181,18 +219,21 @@ struct CalendarView: View {
         }
     }
 
-    // Einzelnes Tagesfeld mit Auswahl-/Markierungslogik
+    // MARK: - Tageszelle
+    /// Rendert eine einzelne Tageszelle inkl. Auswahlzustand, Markierung und Heutigkeits‑Rahmen.
+    /// - Parameter date: Der darzustellende Tag.
     @ViewBuilder
     private func dayCell(for date: Date) -> some View {
         let inMonth = isInDisplayedMonth(date)
         let isToday = self.isToday(date)
-
         let isSelected = (selectedDate == date)
         let isMarked = streakManager.isDateCompleted(date)
 
         let base = ZStack {
+            // Hintergrund hängt davon ab, ob der Tag im aktuellen Monat liegt und ob er ausgewählt ist.
             DayBackground(inMonth: inMonth, isSelected: isSelected)
 
+            // Zarte Wasserwellen‑Note im Hintergrund für optische Struktur.
             Image(systemName: "water.waves")
                 .font(.system(size: 42, weight: .regular))
                 .foregroundColor(.white.opacity(inMonth ? 0.06 : 0.0))
@@ -200,8 +241,8 @@ struct CalendarView: View {
                 .offset(x: 6, y: -6)
                 .allowsHitTesting(false)
 
+            // Markierungslogik: Abgeschlossene Tage zeigen eine Flamme; sonst Tageszahl.
             if isMarked || (isToday && streakManager.isTodayMarkedComplete()) {
-                // Abgeschlossen: nur zentrierte Flamme anzeigen (kein Hintergrund)
                 Image(systemName: "flame.fill")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(
@@ -216,14 +257,12 @@ struct CalendarView: View {
                     .foregroundStyle(inMonth ? Color.primary : Color.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-
-            // Die blauen Hervorhebungs-Overlays für abgeschlossene Tage wurden entfernt
-            
         }
 
         base
             .aspectRatio(1.0, contentMode: .fit)
             .padding(5)
+            // Rahmen für Auswahl bzw. für „heute“; verleiht Klarheit ohne harte Füllung.
             .overlay(
                 selectionOrTodayStroke(isSelected: isSelected, isToday: isToday)
             )
@@ -234,7 +273,9 @@ struct CalendarView: View {
             .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    // Hintergrunddarstellung eines Tagesfeldes (abhängig von Zustand)
+    // MARK: - Hintergrund für Tageszellen
+    /// Hintergrunddarstellung eines Tagesfeldes. Innerhalb des Monats erscheint ein zarter Farbverlauf,
+    /// außerhalb bleibt der Hintergrund transparent. Bei Auswahl wird die Intensität erhöht.
     private struct DayBackground: View {
         let inMonth: Bool
         let isSelected: Bool
@@ -244,6 +285,7 @@ struct CalendarView: View {
                 .fill(backgroundStyle)
         }
 
+        /// Liefert den passenden Füllstil je nach Zustand.
         private var backgroundStyle: AnyShapeStyle {
             if inMonth {
                 return AnyShapeStyle(
@@ -265,7 +307,8 @@ struct CalendarView: View {
         }
     }
 
-    // Rahmen je nach Zustand (ausgewählt/heute)
+    // MARK: - Rahmenlogik (Auswahl/Heute)
+    /// Zeichnet je nach Zustand einen Rahmen: kräftiger bei Auswahl, blau/cyan bei „heute“.
     @ViewBuilder
     private func selectionOrTodayStroke(isSelected: Bool, isToday: Bool) -> some View {
         if isSelected {
@@ -288,9 +331,9 @@ struct CalendarView: View {
             EmptyView()
         }
     }
-    
 
-    // Hilfsfunktion: Monat wechseln
+    // MARK: - Navigation & Datumsberechnung
+    /// Verschiebt den angezeigten Monat um den angegebenen Offset (negativ = zurück, positiv = vor).
     private func changeMonth(by offset: Int) {
         if let newDate = calendar.date(byAdding: .month, value: offset, to: displayedMonth) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -298,24 +341,24 @@ struct CalendarView: View {
             }
         }
     }
-    
-    // Hilfsfunktion: Zu heute springen
+
+    /// Springt animiert auf den aktuellen Monat (heutiges Datum).
     private func jumpToToday() {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             displayedMonth = Date()
         }
     }
 
-    // Hilfsfunktion: Monatstitel
+    /// Formatiert den Monatsnamen (z. B. „Januar“).
     private func monthTitle(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = Locale.current
-        formatter.dateFormat = "LLLL" // Ganzer Monatsname
+        formatter.dateFormat = "LLLL" // ganzer Monatsname
         return formatter.string(from: startOfMonth(for: date)).capitalized
     }
 
-    // Hilfsfunktion: Jahrestitel
+    /// Formatiert die Jahreszahl (z. B. „2026“).
     private func yearTitle(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -323,8 +366,8 @@ struct CalendarView: View {
         formatter.dateFormat = "yyyy"
         return formatter.string(from: startOfMonth(for: date))
     }
-    
-    // Hilfsfunktion: Wochentitel (z. B. "29. Jan – 4. Feb 2026")
+
+    /// Liefert eine Wochenbeschreibung (z. B. „29. Jan – 4. Feb 2026"); aktuell nur als Beispiel/Helfer vorhanden.
     private func weekTitle(for date: Date) -> String {
         guard let interval = calendar.dateInterval(of: .weekOfYear, for: date) else { return "" }
         let start = interval.start
@@ -346,7 +389,7 @@ struct CalendarView: View {
         return "\(startStr) – \(endStr) \(yearStr)"
     }
 
-    // Hilfsfunktion: Kurze Wochentagssymbole
+    /// Liefert die zwei‑buchstabigen Kurzformen der Wochentage in lokaler Reihenfolge unter Berücksichtigung des ersten Wochentags.
     private func weekdaySymbolsShort() -> [String] {
         var symbols = calendar.shortStandaloneWeekdaySymbols
         let firstWeekdayIndex = calendar.firstWeekday - 1
@@ -358,13 +401,13 @@ struct CalendarView: View {
         return symbols.map { String($0.prefix(2)) }
     }
 
-    // Hilfsfunktion: Monatserster
+    /// Ermittelt den Monatsanfang für ein gegebenes Datum.
     private func startOfMonth(for date: Date) -> Date {
         let comps = calendar.dateComponents([.year, .month], from: date)
         return calendar.date(from: comps) ?? date
     }
 
-    // Hilfsfunktion: Tage des Monats
+    /// Erzeugt das vollständige Gitter an Datumswerten für den angezeigten Monat inkl. Vor‑ und Nachlauf.
     private func daysForMonth() -> [Date] {
         let start = startOfMonth(for: displayedMonth)
         guard let range = calendar.range(of: .day, in: .month, for: start) else { return [] }
@@ -389,23 +432,23 @@ struct CalendarView: View {
         return days
     }
 
-    // Hilfsfunktion: Datum liegt im angezeigten Monat?
+    /// Prüft, ob ein Datum im aktuell angezeigten Monat liegt.
     private func isInDisplayedMonth(_ date: Date) -> Bool {
         calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month)
     }
 
-    // Hilfsfunktion: Ist heute?
+    /// Prüft, ob ein Datum „heute“ ist.
     private func isToday(_ date: Date) -> Bool {
         calendar.isDateInToday(date)
     }
 
-    // Hilfsfunktion: Tageszahl-Label
+    /// Liefert die Tageszahl als String (z. B. "17").
     private func dayLabel(for date: Date) -> String {
         let day = calendar.component(.day, from: date)
         return "\(day)"
     }
 
-    // Hilfsfunktion: Accessibility-Label
+    /// Liefert ein ausführliches Datum für VoiceOver (z. B. "Dienstag, 17. Januar 2026").
     private func accessibilityLabel(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -413,13 +456,14 @@ struct CalendarView: View {
         formatter.dateStyle = .full
         return formatter.string(from: date)
     }
-    
-    // Wrapper für aktuellen StreakManager
+
+    /// Aktueller Streak‑Zähler, relativ zu lastDay.
     private func currentStreakCount() -> Int {
         streakManager.currentStreakCount(referenceDate: lastDay)
     }
 }
 
+// MARK: - Vorschau
 #Preview {
     NavigationStack {
         CalendarView().tint(.blue)

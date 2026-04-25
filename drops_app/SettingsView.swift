@@ -1,20 +1,31 @@
-// SettingsView: Einstellungen für Portionsgröße, Glasanzahl und Erinnerungen
-// - Zeigt Formel (Gesamt = Anzahl × ml)
-// - Drei große Navigations-Buttons im einheitlichen Kapsel-/Gradient-Stil
 import SwiftUI
 
+/*
+ SettingsView – zentrale Einstellungen der App
+ --------------------------------------------
+ Zweck
+ - Drei Einstellungsbereiche über große, einheitliche Navigationsbuttons:
+   1) Portionsgröße (ml)
+   2) Anzahl Gläser (Ziel)
+   3) Erinnerungen (Benachrichtigungen)
+ - Eine Formel-Box zeigt live die Gesamtsumme (Anzahl × ml).
+
+ Daten
+ - @AppStorage("portionSizeMl") und @AppStorage("glassCount") spiegeln die aktuellen Werte.
+
+ Gestaltung
+ - Einheitlicher „Meer‑Stil“: Kapsel mit Gradient (Blau → Cyan → Teal), glänzender Rand, weicher Schatten.
+ - Große Typografie, breite Touch‑Ziele.
+*/
 struct SettingsView: View {
-    // Ausgewählte Portionsgröße in Millilitern (persistiert)
     @AppStorage("portionSizeMl") private var selectedSize: Int = 250
-    // Gewählte Anzahl der Gläser (persistiert)
     @AppStorage("glassCount") private var glassCount: Int = 1
 
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
 
-            // Formel-Box: zeigt live die Gesamtsumme in ml
-            // Formel-Box: Gesamtmenge = Anzahl × ml (bessere Sichtbarkeit)
+            // Formel-Box: zeigt live die Gesamtsumme in ml (Anzahl × ml)
             HStack(spacing: 10) {
                 Image(systemName: "sum")
                     .font(.system(size: 22, weight: .bold))
@@ -50,7 +61,6 @@ struct SettingsView: View {
             Spacer()
 
             // Button: Portionsgröße wählen
-            // Erster großer Button
             NavigationLink(destination: PortionSizePickerView()) {
                 HStack(spacing: 10) {
                     Text("Portionsgröße wählen")
@@ -73,7 +83,6 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,
@@ -87,7 +96,6 @@ struct SettingsView: View {
             }
 
             // Button: Anzahl Gläser wählen
-            // Zweiter großer Button
             NavigationLink(destination: GlassCountPickerView()) {
                 HStack(spacing: 10) {
                     Text("Anzahl Gläser wählen")
@@ -110,7 +118,6 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,
@@ -124,7 +131,6 @@ struct SettingsView: View {
             }
 
             // Button: Erinnerungen konfigurieren
-            // Dritter großer Button
             NavigationLink(destination: ReminderSettingsView()) {
                 HStack(spacing: 10) {
                     Text("Erinnerungen")
@@ -147,7 +153,6 @@ struct SettingsView: View {
                 )
                 .overlay(
                     ZStack {
-                        // Glänzender Rand
                         Capsule().strokeBorder(
                             LinearGradient(colors: [Color.white.opacity(0.55), Color.white.opacity(0.08)],
                                            startPoint: .topLeading,

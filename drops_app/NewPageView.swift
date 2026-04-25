@@ -1,37 +1,56 @@
-// CounterPageView: Zähler- und Füll-Logik der Gläser-Ansicht
-// - Passt sich dynamisch an die in den Einstellungen gewählte Anzahl Gläser an
-// - Skaliert die Füllstufen (0–10) proportional zum Ziel
-// - Markiert den Tag im Kalender, wenn das Ziel erreicht ist
-
 import SwiftUI
 import UIKit
 
-// Haupt-View für den Tageszähler
+/*
+ CounterPageView – Tageszähler mit Glasfüllständen und Zielerreichung
+ -------------------------------------------------------------------
+ Zweck
+ - Zählt die konsumierten Gläser des aktuellen Tages und visualisiert den Fortschritt.
+ - Skaliert die Darstellung dynamisch an das Ziel (Anzahl Gläser) aus den Einstellungen.
+ - Markiert den Tag im Streak‑Kalender, sobald das Ziel erreicht ist.
+
+ Daten & Zustände
+ - todayCount (@AppStorage): aktueller Tagesstand; wird bei Tageswechsel zurückgesetzt.
+ - todayCountDate (@AppStorage): Datum des letzten Updates (yyyy‑MM‑dd) zur Erkennung des Tageswechsels.
+ - targetGlasses (@AppStorage): Zielmenge aus den Einstellungen.
+ - flamePulse/glowPulse (@State): Animationszustände für das Flammen‑Badge bei Zielerreichung.
+ - glassImages: Bildstufen (0–10) für den Füllstand der Gläsergrafik.
+
+ Darstellung
+ - Große Fortschrittszahl (x/y) mit Gradient‑Farbgebung.
+ - Tappbares Glasbild erhöht den Zähler; ein Zurück‑Button blendet sich ein, wenn der Zähler > 0 ist.
+ - Bei Zielerreichung erscheint ein runder Navigations‑Button zum Kalender (animiertes Flammen‑Badge).
+ - Unten links/rechts: runde Buttons für Kalender und Einstellungen im Meer‑Stil.
+
+ Barrierefreiheit & Haptik
+ - Monospaced‑Digits für ruhige Ziffern.
+ - UIImpactFeedbackGenerator bei Inkrement/Dekrement.
+*/
 struct CounterPageView: View {
-    // Aktueller Tagesstand (Zähler) – wird täglich zurückgesetzt
+    // MARK: - Persistenz & Animation
     @AppStorage("todayCount") private var zaehler: Int = 0
-    // Datum des letzten Zähler-Updates (für Tageswechsel)
     @AppStorage("todayCountDate") private var lastCountDate: String = ""
-    // Animations-Flags für die Flammen-/Glüh-Effekte
     @State private var flamePulse: Bool = false
     @State private var glowPulse: Bool = false
-    // Zielanzahl Gläser (aus Einstellungen)
     @AppStorage("glassCount") private var targetGlasses: Int = 10
-    // Bildstufen für die Gläser-Füllung (0–10)
+
+    /// Bildstufen für die Gläser‑Füllung (0–10)
     private let glassImages: [String] = [
         "glass_0", "glass_1", "glass_2", "glass_3", "glass_4",
         "glass_5", "glass_6", "glass_7", "glass_8", "glass_9", "glass_10"
     ]
-    
-    // Schutz gegen ungültige Werte (mindestens 1 Glas)
+
+    // MARK: - Abgeleitete Werte
+    /// Schutz gegen ungültige Werte (mindestens 1 Glas)
     private var maxGlasses: Int { max(targetGlasses, 1) }
-    // Skaliert den Zähler (0..Ziel) auf Bildindex (0..10)
+
+    /// Skaliert den Zähler (0..Ziel) auf Bildindex (0..10)
     private var fillIndex: Int {
         let ratio = Double(zaehler) / Double(maxGlasses)
         return min(10, max(0, Int(round(ratio * 10.0))))
     }
-    
-    // Liefert das heutige Datum als Schlüssel (yyyy-MM-dd)
+
+    /// Liefert das heutige Datum als Schlüssel (yyyy‑MM‑dd).
     private func todayKey() -> String {
         let formatter = DateFormatter()
         formatter.calendar = Calendar.current
@@ -40,12 +59,13 @@ struct CounterPageView: View {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
     }
-    
+
+    // MARK: - Layout
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
+                // Kopf: große Fortschrittsanzeige (x/y)
                 ZStack {
-                    // Anzeige "x/y" mit dynamischem Ziel
                     HStack(spacing: 10) {
                         Text("\(zaehler)/\(maxGlasses)")
                             .font(.system(size: 72, weight: .black, design: .rounded))
@@ -80,9 +100,8 @@ struct CounterPageView: View {
                 Divider()
 
                 ZStack {
-                    // Voll – Ziel erreicht: zeige runden Navigations-Button zum Kalender
+                    // Wenn das Ziel erreicht ist: runder Navigations‑Button zum Kalender
                     if zaehler == maxGlasses {
-                        // Blaue Flammen-Plakette im Meeresstil bei voller Füllung
                         NavigationLink {
                             CalendarView()
                         } label: {
@@ -151,7 +170,8 @@ struct CounterPageView: View {
                         }
                         .symbolEffect(.pulse.byLayer, options: .repeating.speed(1.2))
                     }
-                    
+
+                    // Rückwärts‑Button, sobald der Zähler > 0 ist
                     if zaehler > 0 {
                         Button(action: {
                             let generator = UIImpactFeedbackGenerator(style: .light)
@@ -190,6 +210,7 @@ struct CounterPageView: View {
                         .zIndex(1)
                         .transition(.opacity.combined(with: .move(edge: .leading)))
                     }
+
                     // Füllbild basierend auf skaliertem Index
                     Image(glassImages[fillIndex])
                         .resizable()
@@ -210,7 +231,6 @@ struct CounterPageView: View {
                                     zaehler += 1
                                     lastCountDate = todayKey()
                                 }
-                                // Wenn wir gerade das Ziel erreicht haben, Abschluss speichern und Beobachter benachrichtigen
                                 if zaehler == maxGlasses {
                                     StreakManager.shared.markTodayCompleted()
                                 }
@@ -221,8 +241,8 @@ struct CounterPageView: View {
                 .animation(.easeInOut(duration: 0.22), value: zaehler)
             }
 
+            // Untere Schaltflächen: Kalender (links) & Einstellungen (rechts)
             HStack(spacing: 20) {
-                // Unten links: Kalender
                 NavigationLink {
                     CalendarView()
                 } label: {
@@ -251,7 +271,6 @@ struct CounterPageView: View {
                         .accessibilityLabel("Kalender")
                 }
 
-                // Unten rechts: Einstellungen
                 NavigationLink {
                     SettingsView()
                 } label: {
@@ -283,20 +302,18 @@ struct CounterPageView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 67)
         }
-        // Tageswechsel: Zähler bei neuem Tag zurücksetzen
+        // MARK: - Lebenszyklus: Tageswechsel & Zieländerung
         .onAppear {
             let today = todayKey()
             if lastCountDate != today {
                 zaehler = 0
                 lastCountDate = today
             }
-            // Beim Erscheinen aktuellen Stand auf aktuelles Ziel begrenzen
             let currentGoal = max(1, targetGlasses)
             if zaehler > currentGoal {
                 zaehler = currentGoal
             }
         }
-        // Ziel geändert: aktuellen Stand beibehalten, ggf. auf neues Ziel begrenzen
         .onChange(of: targetGlasses) { _, newValue in
             let newGoal = max(1, newValue)
             if zaehler > newGoal {
@@ -305,11 +322,11 @@ struct CounterPageView: View {
             lastCountDate = todayKey()
         }
         .padding()
-        // Zahnrad in der Toolbar gemäß Anweisung entfernt
         .navigationBarBackButtonHidden(true)
     }
 }
 
+// MARK: - Vorschau
 #Preview {
     CounterPageView()
 }

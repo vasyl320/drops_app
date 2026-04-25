@@ -1,17 +1,33 @@
 import SwiftUI
 
-// MARK: - Änderungen/Ergänzungen
-// 1) Persistente Speicherung via @AppStorage für ml (selectedPortionSizeML) und Anzahl der Gläser (glassCount)
-// 2) Zusätzlicher Picker (segmented) für die Anzahl der Gläser
-// 3) Kleine graue Zusammenfassung (Formel): Anzahl × ml = Gesamtmenge
-// 4) Navigationstitel auf "Zurück" gesetzt, damit neben dem Back-Button der Text erscheint
+/*
+ PortionSizePickerView – Auswahl der Portionsgröße (ml)
+ -----------------------------------------------------
+ Zweck
+ - Nutzer wählt die Menge pro Glas (in Millilitern) über einen Wheel‑Picker.
+ - Die Auswahl wird persistent via @AppStorage("portionSizeMl") gespeichert.
 
+ Interaktion
+ - Wheel‑Picker: Scrollen/Tippen ändert die ml‑Menge.
+ - Eigener Zurück‑Button in der Toolbar blendet den Standard‑Back‑Button aus.
+
+ Gestaltung & Barrierefreiheit
+ - Titel „Portionsgröße“ in großer, klarer Typografie.
+ - Vergrößerter Wheel‑Picker (scaleEffect) für bessere Lesbarkeit.
+ - Live‑Anzeige der gewählten ml‑Zahl, monospacedDigit in der Formel.
+*/
 struct PortionSizePickerView: View {
+    // MARK: - Zustände & Daten
+    /// Persistente Auswahl der Portionsgröße (in Millilitern).
     @AppStorage("portionSizeMl") private var selectedSize: Int = 250
+
+    /// Verfügbare ml‑Werte von 200 bis 500 in 50er‑Schritten.
     private let sizes: [Int] = Array(stride(from: 200, through: 500, by: 50))
-    @Environment(\.dismiss) private var dismiss // Zum Zurücknavigieren (eigener Zurück-Button)
-    
-    // Ausgelagerte Zeile zur Vereinfachung der Typprüfung
+
+    /// Umgebung zum Schließen der Ansicht (Zurück‑Navigation).
+    @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Hilfsdarstellung für Pickerzeile
     @ViewBuilder
     private func row(for size: Int) -> some View {
         let isSelected: Bool = (size == selectedSize)
@@ -24,17 +40,19 @@ struct PortionSizePickerView: View {
             .tag(size)
     }
 
+    // MARK: - Layout
     var body: some View {
         VStack(spacing: 24) {
-            // iOS-Wheel-Picker für Portionsgröße – zentriert und vergrößert
+            // Titelzeile im App‑Stil
             HStack(spacing: 8) {
                 Text("Portionsgröße")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
             }
-            
+
             Spacer()
-            
+
+            // Wheel‑Picker + Live‑Anzeige
             VStack(spacing: 12) {
                 Picker("Portionsgröße (ml)", selection: $selectedSize) {
                     ForEach(sizes, id: \.self) { size in
@@ -59,10 +77,9 @@ struct PortionSizePickerView: View {
         }
         .padding()
         .tint(.teal)
-        
-         // Aktiviert iOS-Navigationstitel (Back-Button sichtbar)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { // Eigener Zurück-Button im iOS-Stil
+        .toolbar {
+            // Eigener Zurück‑Button im iOS‑Stil
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: { dismiss() }) {
                     HStack(spacing: 4) {
@@ -71,10 +88,10 @@ struct PortionSizePickerView: View {
                     }
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                 }
-                .accessibilityLabel("Zurück") // VoiceOver-Label für den Zurück-Button
+                .accessibilityLabel("Zurück")
             }
         }
-        .navigationBarBackButtonHidden(true) // Standard-Back-Button ausblenden, wir zeigen einen eigenen "Zurück"-Button
+        .navigationBarBackButtonHidden(true)
     }
 }
 

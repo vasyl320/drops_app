@@ -2,19 +2,38 @@ import Foundation
 import SwiftUI
 import Combine
 
+/*
+ StreakManager – Verwaltung von Streaks und Tagesmarkierungen
+ ------------------------------------------------------------
+ Zweck
+ - Speichert/liest abgeschlossene Tage ("Ziel erreicht") und liefert daraus den aktuellen Streak.
+ - Bietet UI‑Hilfen (z. B. prüfen, ob heute abgeschlossen wurde).
+
+ Persistenz
+ - UserDefaults mit zwei Schlüsseln:
+   • markedBlueDates: JSON‑Array von yyyy‑MM‑dd‑Strings (abgeschlossene Tage)
+   • todayFlameDate: yyyy‑MM‑dd‑String (Badge‑Anzeige für "heute abgeschlossen")
+
+ Architektur
+ - Singleton (shared), als ObservableObject nutzbar. Änderungen triggern objectWillChange, damit Views reaktiv aktualisieren.
+ - Alle Datumsoperationen verwenden den aktuellen Kalender und die lokale Zeitzone.
+*/
 final class StreakManager: ObservableObject {
+    // MARK: - Singleton & Grundkonfiguration
     static let shared = StreakManager()
 
     private let calendar: Calendar = .current
 
-    // Speicherschlüssel
-    private let markedBlueDatesKey = "markedBlueDates" // JSON-Array von Strings (yyyy-MM-dd)
+    // MARK: - Persistenzschlüssel & Storage
+    private let markedBlueDatesKey = "markedBlueDates"   // JSON‑Array von Strings (yyyy‑MM‑dd)
     private let todayFlameDateKey = "todayFlameDate"
 
-    // Konstante Werte über AppStorage-ähnlichen UserDefaults-Zugriff (außerhalb von Views nutzbar)
+    /// Zugriff auf UserDefaults (außerhalb von Views nutzbar)
     private var defaults: UserDefaults { .standard }
 
-    // MARK: - Konstanz-Wrapper
+    // MARK: - Persistenz‑Wrapper
+    /// Menge abgeschlossener Tage als Set der Schlüssel (yyyy‑MM‑dd). Beim Setzen wird ein JSON‑Array gespeichert
+    /// und objectWillChange gesendet, damit abhängige Views aktualisieren.
     private var markedBlueDates: Set<String> {
         get {
             guard let string = defaults.string(forKey: markedBlueDatesKey),
@@ -34,45 +53,49 @@ final class StreakManager: ObservableObject {
         }
     }
 
+    /// Schlüssel des Tages, an dem zuletzt die Flamme für "heute abgeschlossen" gesetzt wurde.
     private var todayFlameDate: String {
         get { defaults.string(forKey: todayFlameDateKey) ?? "" }
         set { defaults.set(newValue, forKey: todayFlameDateKey); objectWillChange.send() }
     }
 
     // MARK: - Öffentliche API
-
+    /// Markiert den heutigen Tag als abgeschlossen und setzt das Flammen‑Badge.
     func markTodayCompleted() {
         let today = Date()
         let key = dateKey(today)
 
-        // Flammen-Datum auf heute setzen (für Anzeige eines Badges, falls benötigt)
+        // Flammen‑Datum für Badge auf heute setzen
         todayFlameDate = key
 
-        // Abgeschlossenen Tag speichern
+        // Abgeschlossenen Tag persistieren
         var set = markedBlueDates
         set.insert(key)
         markedBlueDates = set
     }
 
+    /// Prüft, ob ein bestimmtes Datum als abgeschlossen markiert ist.
     func isDateCompleted(_ date: Date) -> Bool {
         markedBlueDates.contains(dateKey(date))
     }
 
-    // Verzögerte Zurücksetzlogik:
-    // - Der Streak repräsentiert aufeinanderfolgende Tage bis zum zuletzt abgeschlossenen Tag
-    // - Wenn der gestrige Tag verpasst wurde (Lücke > 1 Tag bis zur letzten Erfassung), dann 0 zurückgeben
-    // - Andernfalls rückwärts ab dem zuletzt abgeschlossenen Tag die aufeinanderfolgenden Tage zählen
+    /// Ermittelt den aktuellen Streak (aufeinanderfolgende abgeschlossene Tage),
+    /// ausgehend vom zuletzt abgeschlossenen Tag bis zum Referenzdatum.
+    ///
+    /// Regeln:
+    /// - Wenn der letzte abgeschlossene Tag weiter als 1 Tag zurückliegt, ist der Streak 0.
+    /// - Ansonsten wird rückwärts gezählt, bis ein nicht abgeschlossener Tag gefunden wird.
     func currentStreakCount(referenceDate: Date = Date()) -> Int {
-        // Ermittle den zuletzt abgeschlossenen Tag, der <= heute ist
+        // Zuletzt abgeschlossenen Tag (<= Referenz) ermitteln
         let latestCompleted = mostRecentCompletedDate(upTo: referenceDate)
         guard let start = latestCompleted else { return 0 }
 
-        // Sicherstellen, dass keine Lücke besteht: Der letzte abgeschlossene Tag muss heute oder gestern sein
+        // Sicherstellen, dass keine Lücke besteht (heute oder gestern)
         if let daysGap = calendar.dateComponents([.day], from: start.stripTime(using: calendar), to: referenceDate.stripTime(using: calendar)).day, daysGap > 1 {
             return 0
         }
 
-        // Aufeinanderfolgende Tage rückwärts ab Start zählen
+        // Rückwärts aufeinanderfolgende abgeschlossene Tage zählen
         var count = 0
         var cursor = start
         while true {
@@ -87,20 +110,20 @@ final class StreakManager: ObservableObject {
         return count
     }
 
-    // Optional: für UI-Badges, die anzeigen, ob heute abgeschlossen wurde
+    /// Gibt zurück, ob "heute" als abgeschlossen markiert ist (für UI‑Badges).
     func isTodayMarkedComplete() -> Bool {
         let todayKey = dateKey(Date())
         return todayFlameDate == todayKey
     }
 
-    // Hilfsfunktion: ermittelt das zuletzt abgeschlossene Datum bis zu einem Referenzdatum
+    // MARK: - Interne Hilfsfunktionen
+    /// Liefert das zuletzt abgeschlossene Datum bis einschließlich Referenzdatum.
+    /// Schneller Pfad: heute, dann gestern; ansonsten Rückwärtssuche bis zu ~2 Jahren.
     private func mostRecentCompletedDate(upTo referenceDate: Date) -> Date? {
-        // Schneller Pfad: heute prüfen, dann gestern
         let today = referenceDate.stripTime(using: calendar)
         if isDateCompleted(today) { return today }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), isDateCompleted(yesterday) { return yesterday }
 
-        // Fallback: rückwärts scannen bis zu einem sinnvollen Limit (z. B. 2 Jahre)
         var cursor = today
         for _ in 0..<730 { // ~2 Jahre
             guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
@@ -110,7 +133,7 @@ final class StreakManager: ObservableObject {
         return nil
     }
 
-    // MARK: - Hilfsfunktionen
+    /// Erzeugt den Schlüssel (yyyy‑MM‑dd) für ein Datum. Zeitanteile werden entfernt.
     func dateKey(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -121,7 +144,9 @@ final class StreakManager: ObservableObject {
     }
 }
 
+// MARK: - Date‑Erweiterung
 private extension Date {
+    /// Entfernt Zeitanteile (setzt auf Mitternacht) gemäß übergebenem Kalender.
     func stripTime(using calendar: Calendar) -> Date {
         let comps = calendar.dateComponents([.year, .month, .day], from: self)
         return calendar.date(from: comps) ?? self
