@@ -41,9 +41,9 @@ struct ContentView: View {
 
     // MARK: - Inhalt
     var body: some View {
-        // NavigationStack stellt den Navigationskontext für alle NavigationLinks bereit.
+//        NavigationStack stellt den Navigationskontext für alle NavigationLinks bereit.
         NavigationStack {
-            // ZStack mit bottom‑Alignment, damit spätere, am unteren Rand schwebende Elemente
+//                                     ZStack mit bottom‑Alignment, damit spätere, am unteren Rand schwebende Elemente
             // (z. B. Toolbars oder Bottom‑Buttons) leicht ergänzt werden können.
             ZStack(alignment: .bottom) {
                 // Hauptsäule für Logo, Titel und Call‑to‑Action

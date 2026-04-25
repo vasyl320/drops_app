@@ -1,17 +1,6 @@
 import Foundation
 import UserNotifications
 
-/*
- NotificationManager – Verwaltung lokaler Benachrichtigungen
- -----------------------------------------------------------
- Zweck
- - Kapselt die Anfragen an UNUserNotificationCenter für tägliche Erinnerungen.
- - Bietet Hilfsfunktionen zum Anfordern von Berechtigungen, Planen und Abbrechen.
-
- Verhalten
- - scheduleDailyReminder: entfernt alte Requests, plant die Hauptbenachrichtigung und optional eine zweite (Nudge) nach +2 Stunden.
- - cancelDailyReminders: entfernt ausstehende Requests für unsere Bezeichner.
-*/
 enum NotificationManager {
     /// Fordert die Benachrichtigungsberechtigung an und liefert das Ergebnis im Hauptthread zurück.
     static func requestAuthorization(completion: ((Bool) -> Void)? = nil) {

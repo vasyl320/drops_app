@@ -63,7 +63,7 @@ struct SettingsView: View {
             // Button: Portionsgröße wählen
             NavigationLink(destination: PortionSizePickerView()) {
                 HStack(spacing: 10) {
-                    Text("Portionsgröße wählen")
+                    Text("Portionsgröße")
                         .font(.system(size: 28, weight: .semibold))
                     Image(systemName: "arrow.right.circle.fill")
                         .font(.system(size: 28, weight: .semibold))
@@ -91,14 +91,13 @@ struct SettingsView: View {
                         )
                     }
                 )
-                .padding(.top, 12)
                 .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
             }
 
             // Button: Anzahl Gläser wählen
             NavigationLink(destination: GlassCountPickerView()) {
                 HStack(spacing: 10) {
-                    Text("Anzahl Gläser wählen")
+                    Text("Anzahl Gläser")
                         .font(.system(size: 28, weight: .semibold))
                     Image(systemName: "arrow.right.circle.fill")
                         .font(.system(size: 28, weight: .semibold))
@@ -126,7 +125,6 @@ struct SettingsView: View {
                         )
                     }
                 )
-                .padding(.bottom, 8)
                 .shadow(color: Color.cyan.opacity(0.25), radius: 10, x: 0, y: 6)
             }
 

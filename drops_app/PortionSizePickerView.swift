@@ -5,7 +5,7 @@ import SwiftUI
  -----------------------------------------------------
  Zweck
  - Nutzer wählt die Menge pro Glas (in Millilitern) über einen Wheel‑Picker.
- - Die Auswahl wird persistent via @AppStorage("portionSizeMl") gespeichert.
+ - Die Ausw=ahl wird persistent via @AppStorage("portionSizeMl") gespeichert.
 
  Interaktion
  - Wheel‑Picker: Scrollen/Tippen ändert die ml‑Menge.
@@ -90,7 +90,7 @@ struct PortionSizePickerView: View {
                 }
                 .accessibilityLabel("Zurück")
             }
-        }
+                }
         .navigationBarBackButtonHidden(true)
     }
 }
@@ -100,4 +100,4 @@ struct PortionSizePickerView: View {
         PortionSizePickerView()
     }
 }
-
+                        

@@ -391,13 +391,20 @@ struct CalendarView: View {
 
     /// Liefert die zwei‑buchstabigen Kurzformen der Wochentage in lokaler Reihenfolge unter Berücksichtigung des ersten Wochentags.
     private func weekdaySymbolsShort() -> [String] {
-        var symbols = calendar.shortStandaloneWeekdaySymbols
+        // Verwende explizit die deutsche Locale für Abkürzungen
+        var germanCalendar = calendar
+        germanCalendar.locale = Locale(identifier: "de_DE")
+        var symbols = germanCalendar.shortStandaloneWeekdaySymbols
+
+        // Anordnung entsprechend dem ersten Wochentag des aktuell verwendeten Kalenders
         let firstWeekdayIndex = calendar.firstWeekday - 1
         if firstWeekdayIndex > 0 {
             let head = symbols[firstWeekdayIndex...]
             let tail = symbols[..<firstWeekdayIndex]
             symbols = Array(head) + Array(tail)
         }
+
+        // Optionale Kürzung auf zwei Zeichen, falls länger geliefert
         return symbols.map { String($0.prefix(2)) }
     }
 

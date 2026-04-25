@@ -204,7 +204,7 @@ struct CounterPageView: View {
                                 .shadow(color: Color.cyan.opacity(0.35), radius: 16, x: 0, y: 10)
                                 .contentShape(Circle())
                                 .accessibilityLabel("Zurück")
-                        }
+                         }
                         .frame(maxWidth: .infinity, alignment: .center)
                         .offset(y: 200)
                         .zIndex(1)
